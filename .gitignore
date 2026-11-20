@@ -1,4 +1,4 @@
-# Logs and runtime
+# Logs and runtime caches
 node_modules/
 .pnp
 .pnp.js
@@ -8,17 +8,20 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-# Environment & secrets
+# Environment and secrets (CRITICAL: Never commit credentials)
 .env
 .env*.local
 .env.production
 *.pem
 *.key
+*.cert
 
-# Build outputs - Web
-apps/web/.next/
-apps/web/out/
-apps/web/build/
+# Build outputs - Web & Backend
+web/.next/
+web/out/
+web/build/
+backend/dist/
+backend/build/
 dist/
 .turbo/
 
@@ -27,33 +30,33 @@ dist/
 .packages
 .pub-cache/
 .pub/
-apps/mobile/.dart_tool/
-apps/mobile/.packages
-apps/mobile/.pub-cache/
-apps/mobile/.pub/
-apps/mobile/build/
-apps/mobile/.flutter-plugins
-apps/mobile/.flutter-plugins-dependencies
+mobile/.dart_tool/
+mobile/.packages
+mobile/.pub-cache/
+mobile/.pub/
+mobile/build/
+mobile/.flutter-plugins
+mobile/.flutter-plugins-dependencies
 
-# Android build outputs & local config
-apps/mobile/android/.gradle/
-apps/mobile/android/local.properties
-apps/mobile/android/**/build/
-apps/mobile/android/app/src/main/assets/
+# Android build outputs & local secrets
+mobile/android/.gradle/
+mobile/android/local.properties
+mobile/android/**/build/
+mobile/android/app/src/main/assets/
 *.keystore
 *.jks
 
 # iOS build outputs & CocoaPods
-apps/mobile/ios/Pods/
-apps/mobile/ios/.symlinks/
-apps/mobile/ios/Flutter/Flutter.framework
-apps/mobile/ios/Flutter/Flutter.podspec
-apps/mobile/ios/Flutter/Generated.xcconfig
-apps/mobile/ios/Flutter/app.framework
-apps/mobile/ios/**/*.xcworkspace/xcuserdata/
-apps/mobile/ios/**/*.xcodeproj/xcuserdata/
+mobile/ios/Pods/
+mobile/ios/.symlinks/
+mobile/ios/Flutter/Flutter.framework
+mobile/ios/Flutter/Flutter.podspec
+mobile/ios/Flutter/Generated.xcconfig
+mobile/ios/Flutter/app.framework
+mobile/ios/**/*.xcworkspace/xcuserdata/
+mobile/ios/**/*.xcodeproj/xcuserdata/
 
-# Local databases & sync caches
+# Local databases & sync cache files
 *.sqlite
 *.sqlite3
 *.db

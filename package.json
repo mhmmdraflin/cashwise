@@ -1,25 +1,27 @@
 {
-  "name": "cashwise-monorepo",
+  "name": "cashwise-project",
   "version": "0.1.0",
   "private": true,
-  "description": "CashWise - Modern Hybrid Financial Management Application (Web & Flutter Mobile)",
+  "description": "CashWise - Aplikasi Pengatur Keuangan Web & Mobile Flutter Hybrid (Offline-First + Cloud Sync)",
   "workspaces": [
-    "apps/*",
+    "backend",
+    "web",
     "packages/*"
   ],
   "scripts": {
-    "dev:web": "npm --workspace=apps/web run dev",
-    "dev:server": "npm --workspace=packages/server run dev",
-    "build:web": "npm --workspace=apps/web run build",
+    "dev:backend": "npm --workspace=backend run dev",
+    "dev:web": "npm --workspace=web run dev",
+    "build:web": "npm --workspace=web run build",
+    "build:backend": "npm --workspace=backend run build",
     "build:shared": "npm --workspace=packages/shared run build",
     "lint": "npm run lint --workspaces --if-present",
     "test": "npm run test --workspaces --if-present"
   },
   "keywords": [
+    "cashwise",
     "finance",
-    "budget",
-    "hybrid-sync",
     "offline-first",
+    "hybrid-sync",
     "flutter",
     "nextjs",
     "sqlite",

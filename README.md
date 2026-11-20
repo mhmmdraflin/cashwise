@@ -1,69 +1,78 @@
-# CashWise — Aplikasi Pengatur Keuangan Web & Mobile
+# CashWise — Smart Financial Management Platform
 
-CashWise adalah platform manajemen keuangan personal modern berbasis **Web** dan **Mobile (Flutter Android & iOS)** dengan arsitektur **Hybrid (Offline-First Local Database + Cloud Database Synchronization)**.
-
----
-
-## 🌟 Fitur Utama
-
-- **Offline-First & Instant Access**: Catat transaksi, buat anggaran, dan lihat laporan tanpa ketergantungan koneksi internet. Data tersimpan di database lokal perangkat (SQLite / IndexedDB).
-- **Sinkronisasi Otomatis & Aman (Cloud Sync)**: Begitu koneksi aktif, data tersinkronisasi secara dua arah (bidirectional delta sync) dengan cloud database, lengkap dengan resolusi konflik.
-- **Konsistensi Multi-Platform**: Pengalaman pengguna dan data identik di Web (desktop & tablet) maupun Mobile (Android & iOS).
-- **Desain Modern & Non-Slop**: Mengadopsi prinsip desain anti-slop: tipografi jelas, kontras aksesibel, tata letak fungsional tanpa animasi berlebihan atau visual generik.
-- **Perencanaan Anggaran & Visualisasi Pengeluaran**: Monitoring alokasi anggaran, ringkasan per kategori, tren keuangan bulanan, dan peringatan batas pengeluaran.
+CashWise adalah aplikasi pengatur keuangan modern berbasis **Web** dan **Mobile (Flutter untuk Android & iOS)** dengan arsitektur **Hybrid (Offline-First Local Database + Cloud Database Synchronization)**.
 
 ---
 
-## 🏛️ Struktur Monorepo Proyek
+## 🌟 Konsep Utama & Visi Proyek
+
+1. **Aplikasi Multi-Platform:**
+   - **Web Application:** Akses via desktop & tablet (dashboard, analitik visual, ekspor laporan).
+   - **Mobile Application (Flutter):** Pencatatan transaksi kilat harian, integrasi rekening/dompet, antarmuka sentuh responsif Android & iOS.
+2. **Arsitektur Hybrid & Offline-First:**
+   - Aplikasi dapat digunakan **100% tanpa koneksi internet**.
+   - Data dicatat dan disimpan secara instan di database lokal perangkat (SQLite di Mobile, IndexedDB di Web).
+3. **Sinkronisasi Otomatis & Konsisten:**
+   - Sinkronisasi latar belakang otomatis aktif seketika internet tersedia.
+   - Menggunakan mekanisme *bidirectional delta sync*, deteksi konflik berbasis *versioning & vector clocks*, serta *idempotent mutations*.
+   - Data antara Web dan Mobile selalu akurat dan konsisten.
+
+---
+
+## 🏛️ Struktur Direktori Proyek
 
 ```plaintext
 cashwise/
-├── .github/                  # CI/CD Workflows (GitHub Actions)
-│   └── workflows/ci.yml
-├── apps/
-│   ├── web/                  # Web Application (Next.js / React + Tailwind CSS)
-│   └── mobile/               # Mobile Application (Flutter for Android & iOS)
+├── .agents/                   # Custom skills & agent guidelines
+├── .github/
+│   └── workflows/
+│       └── ci.yml             # GitHub Actions CI Workflow
+├── backend/                   # Backend Cloud Service & Sync Engine (API REST/SSE)
+├── web/                       # Web Application (Next.js App Router & Tailwind CSS)
+├── mobile/                    # Mobile Application (Flutter Dart - Android & iOS)
 ├── packages/
-│   ├── shared/               # Shared Domain Models, Types, dan Protokol Sinkronisasi
-│   └── server/               # Cloud Sync Engine & API Service
-├── docs/                     # Dokumentasi Teknis Lengkap
-│   ├── ARCHITECTURE.md       # Arsitektur Hybrid & Sinkronisasi
-│   ├── DATABASE_SCHEMA.md    # Skema Database Lokal & Cloud
-│   ├── SYNC_SPECIFICATION.md # Protokol & Resolusi Konflik Sinkronisasi
-│   └── ROADMAP.md            # Rencana Kerja Bertahap
-├── scripts/                  # Skrip Helper untuk Development & Deployment
-├── .editorconfig             # Standar Format Kode Antar-Editor
-├── .env.example              # Template Variabel Lingkungan
-├── .gitignore                # Aturan Pengabaian File Git
-├── package.json              # Konfigurasi Monorepo Root (NPM Workspaces)
-├── tsconfig.base.json        # Base Konfigurasi TypeScript
-└── README.md                 # Dokumentasi Utama Proyek
+│   └── shared/                # Kontrak model data bersama, DTO, dan protokol sinkronisasi
+├── docs/                      # Dokumentasi komprehensif proyek
+│   ├── PRD.md                 # Product Requirement Document (Tahap 3)
+│   ├── FEATURES.md            # Detail Spesifikasi Fitur (Tahap 3)
+│   ├── USER_FLOW.md           # Diagram Alur Pengguna (Tahap 3)
+│   ├── ARCHITECTURE.md        # Desain Arsitektur Hybrid (Tahap 4)
+│   ├── DATABASE_SCHEMA.md     # Skema Database Lokal & Cloud (Tahap 4)
+│   ├── API_SPEC.md            # Spesifikasi Endpoint REST/Sync (Tahap 4)
+│   ├── SYNC_STRATEGY.md       # Protokol Sinkronisasi & Resolusi Konflik (Tahap 4)
+│   └── DESIGN_SYSTEM.md       # Design System & Token Anti-Slop (Tahap 5)
+├── config/                    # Pengaturan konfigurasi proyek & build
+│   └── project-config.json
+├── scripts/                   # Helper skrip development, database seed, dan build
+├── .editorconfig              # Standar format kode multi-bahasa
+├── .env.example               # Template environment variables
+├── .gitignore                 # Konfigurasi pengabaian file Git
+├── AGENTS.md                  # Panduan agen, Ponytail rules, & Anti-slop
+├── DESIGN.md                  # Standar desain & token visual Anti-Slop
+├── package.json               # Konfigurasi root monorepo
+├── tsconfig.base.json         # Base TypeScript configuration
+└── README.md                  # Dokumentasi utama proyek CashWise
 ```
 
 ---
 
-## 🚀 Panduan Memulai Cepat
+## 🌿 Strategi Percabangan Git (Branching Strategy)
 
-### Prasyarat
-1. **Node.js** (v20+) dan npm/pnpm.
-2. **Flutter SDK** (v3.19+) untuk pengembangan aplikasi mobile.
-3. **Git** untuk version control.
-
-### Instalasi Repositori
-```bash
-# Clone repositori
-git clone <url-repository>
-cd cashwise
-
-# Pasang dependensi monorepo
-npm install
-```
+- **`main`**: Branch produksi utama. Hanya menerima merge yang telah lolos pengujian menyeluruh dan diverifikasi.
+- **`develop`**: Branch integrasi aktif. Tempat penggabungan fitur-fitur baru sebelum rilis.
+- **`feat/<nama-fitur>`**: Branch fitur vertikal (contoh: `feat/auth-profile`, `feat/offline-sync`).
 
 ---
 
-## 📋 Tahapan Pengerjaan Proyek
+## 🗺️ Tahapan Pengerjaan Proyek
 
-Proyek ini dikembangkan secara disiplin dan bertahap melalui tiga fase utama:
-1. **Tahap 1 – Persiapan File dan Folder**: Penyusunan arsitektur direktori, konfigurasi environment, Git, dan dokumentasi awal. *(Status: Selesai)*
-2. **Tahap 2 – Instalasi Tools dan Skills**: Konfigurasi Anti-Slop, Ponytail, Vercel skills, dan perkakas pendukung.
-3. **Tahap 3 – Pengembangan Project**: Perencanaan detail, perancangan database, implementasi UI/UX, engine sinkronisasi hybrid, testing, dan deployment.
+1. **Tahap 1 – Persiapan File dan Folder** *(Status: Selesai ✅)*
+2. **Tahap 2 – Instalasi Tools dan Skills** *(Status: Menunggu Konfirmasi ⏳)*
+3. **Tahap 3 – Discovery dan Requirements**
+4. **Tahap 4 – Arsitektur dan Database**
+5. **Tahap 5 – UI/UX dan Design System (Anti-Slop)**
+6. **Tahap 6 – Workspace dan Context Engineering**
+7. **Tahap 7 – Development (Vertical Slicing: Slices 1–9)**
+8. **Tahap 8 – Testing, Security & Quality Assurance**
+9. **Tahap 9 – Deployment dan Release**
+10. **Tahap 10 – Final Review dan Handover**

@@ -1,0 +1,16 @@
+{
+  "projectName": "CashWise",
+  "version": "0.1.0",
+  "architecture": "Hybrid (Local-First SQLite/IndexedDB + Cloud PostgreSQL Sync)",
+  "clients": {
+    "web": "Next.js (App Router, Tailwind CSS)",
+    "mobile": "Flutter (Android & iOS)"
+  },
+  "branchStrategy": {
+    "production": "main",
+    "development": "develop",
+    "featurePrefix": "feat/",
+    "fixPrefix": "fix/"
+  },
+  "createdDate": "2026-11-20"
+}
