@@ -1,0 +1,74 @@
+# Logs and runtime
+node_modules/
+.pnp
+.pnp.js
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Environment & secrets
+.env
+.env*.local
+.env.production
+*.pem
+*.key
+
+# Build outputs - Web
+apps/web/.next/
+apps/web/out/
+apps/web/build/
+dist/
+.turbo/
+
+# Build outputs - Mobile (Flutter & Dart)
+.dart_tool/
+.packages
+.pub-cache/
+.pub/
+apps/mobile/.dart_tool/
+apps/mobile/.packages
+apps/mobile/.pub-cache/
+apps/mobile/.pub/
+apps/mobile/build/
+apps/mobile/.flutter-plugins
+apps/mobile/.flutter-plugins-dependencies
+
+# Android build outputs & local config
+apps/mobile/android/.gradle/
+apps/mobile/android/local.properties
+apps/mobile/android/**/build/
+apps/mobile/android/app/src/main/assets/
+*.keystore
+*.jks
+
+# iOS build outputs & CocoaPods
+apps/mobile/ios/Pods/
+apps/mobile/ios/.symlinks/
+apps/mobile/ios/Flutter/Flutter.framework
+apps/mobile/ios/Flutter/Flutter.podspec
+apps/mobile/ios/Flutter/Generated.xcconfig
+apps/mobile/ios/Flutter/app.framework
+apps/mobile/ios/**/*.xcworkspace/xcuserdata/
+apps/mobile/ios/**/*.xcodeproj/xcuserdata/
+
+# Local databases & sync caches
+*.sqlite
+*.sqlite3
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+
+# IDE & OS files
+.DS_Store
+.AppleDouble
+.LSOverride
+Thumbs.db
+.idea/
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+*.sublime-project
+*.sublime-workspace

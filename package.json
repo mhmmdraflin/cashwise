@@ -1,0 +1,30 @@
+{
+  "name": "finflow-monorepo",
+  "version": "0.1.0",
+  "private": true,
+  "description": "FinFlow - Modern Hybrid Financial Management Application (Web & Flutter Mobile)",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev:web": "npm --workspace=apps/web run dev",
+    "dev:server": "npm --workspace=packages/server run dev",
+    "build:web": "npm --workspace=apps/web run build",
+    "build:shared": "npm --workspace=packages/shared run build",
+    "lint": "npm run lint --workspaces --if-present",
+    "test": "npm run test --workspaces --if-present"
+  },
+  "keywords": [
+    "finance",
+    "budget",
+    "hybrid-sync",
+    "offline-first",
+    "flutter",
+    "nextjs",
+    "sqlite",
+    "postgresql"
+  ],
+  "author": "FinFlow Team",
+  "license": "MIT"
+}
