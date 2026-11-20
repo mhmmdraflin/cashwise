@@ -1,4 +1,4 @@
-name: FinFlow CI
+name: CashWise CI
 
 on:
   push:

@@ -1,4 +1,4 @@
-# Roadmap Pengembangan FinFlow
+# Roadmap Pengembangan CashWise
 
 Roadmap ini merinci implementasi bertahap dari awal hingga siap produksi sesuai dengan instruksi pengerjaan proyek.
 

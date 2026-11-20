@@ -1,8 +1,8 @@
 {
-  "name": "finflow-monorepo",
+  "name": "cashwise-monorepo",
   "version": "0.1.0",
   "private": true,
-  "description": "FinFlow - Modern Hybrid Financial Management Application (Web & Flutter Mobile)",
+  "description": "CashWise - Modern Hybrid Financial Management Application (Web & Flutter Mobile)",
   "workspaces": [
     "apps/*",
     "packages/*"
@@ -25,6 +25,6 @@
     "sqlite",
     "postgresql"
   ],
-  "author": "FinFlow Team",
+  "author": "CashWise Team",
   "license": "MIT"
 }

@@ -1,6 +1,6 @@
-# Skema Database FinFlow (Local & Cloud)
+# Skema Database CashWise (Local & Cloud)
 
-Struktur data FinFlow dirancang secara identik antara database lokal (SQLite di Mobile, IndexedDB/SQLite-Wasm di Web) dan database cloud (PostgreSQL), sehingga proses pertukaran data berlangsung mulus.
+Struktur data CashWise dirancang secara identik antara database lokal (SQLite di Mobile, IndexedDB/SQLite-Wasm di Web) dan database cloud (PostgreSQL), sehingga proses pertukaran data berlangsung mulus.
 
 ---
 

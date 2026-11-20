@@ -1,6 +1,6 @@
-# Arsitektur Sistem FinFlow
+# Arsitektur Sistem CashWise
 
-Dokumen ini menjelaskan arsitektur teknis aplikasi FinFlow, dengan fokus pada arsitektur **Hybrid: Offline-First Local Database + Cloud Database Synchronization**.
+Dokumen ini menjelaskan arsitektur teknis aplikasi CashWise, dengan fokus pada arsitektur **Hybrid: Offline-First Local Database + Cloud Database Synchronization**.
 
 ---
 
@@ -40,7 +40,7 @@ Dokumen ini menjelaskan arsitektur teknis aplikasi FinFlow, dengan fokus pada ar
 
 ## 2. Prinsip Desain "Local-First"
 
-FinFlow dirancang agar pengguna tidak pernah terganggu oleh kelambatan jaringan atau ketiadaan sinyal:
+CashWise dirancang agar pengguna tidak pernah terganggu oleh kelambatan jaringan atau ketiadaan sinyal:
 1. **Zero-Latency UI Updates**: Setiap operasi CRUD (Catat pengeluaran, ubah anggaran, tambah akun) langsung dieksekusi dan disimpan di database lokal terlebih dahulu. UI bereaksi secara instan (< 16ms).
 2. **Atomic Sync Queue**: Setiap mutasi lokal dicatat dalam tabel `sync_queue` lokal dengan status `PENDING`, ID entitas, timestamp, dan payload mutasi.
 3. **Idempotent Synchronization**: Pengiriman payload sync bersifat idempoten; pengulangan pengiriman data yang sama tidak akan merusak integritas database server.

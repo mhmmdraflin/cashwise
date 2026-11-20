@@ -1,6 +1,6 @@
-# FinFlow — Aplikasi Pengatur Keuangan Web & Mobile
+# CashWise — Aplikasi Pengatur Keuangan Web & Mobile
 
-FinFlow adalah platform manajemen keuangan personal modern berbasis **Web** dan **Mobile (Flutter Android & iOS)** dengan arsitektur **Hybrid (Offline-First Local Database + Cloud Database Synchronization)**.
+CashWise adalah platform manajemen keuangan personal modern berbasis **Web** dan **Mobile (Flutter Android & iOS)** dengan arsitektur **Hybrid (Offline-First Local Database + Cloud Database Synchronization)**.
 
 ---
 
@@ -17,7 +17,7 @@ FinFlow adalah platform manajemen keuangan personal modern berbasis **Web** dan 
 ## 🏛️ Struktur Monorepo Proyek
 
 ```plaintext
-finflow/
+cashwise/
 ├── .github/                  # CI/CD Workflows (GitHub Actions)
 │   └── workflows/ci.yml
 ├── apps/
@@ -53,7 +53,7 @@ finflow/
 ```bash
 # Clone repositori
 git clone <url-repository>
-cd finflow
+cd cashwise
 
 # Pasang dependensi monorepo
 npm install

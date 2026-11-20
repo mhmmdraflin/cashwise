@@ -1,6 +1,6 @@
-# Spesifikasi Protokol Sinkronisasi Data FinFlow
+# Spesifikasi Protokol Sinkronisasi Data CashWise
 
-FinFlow menggunakan protokol sinkronisasi dua arah (**Bidirectional Delta Sync**) yang efisien, hemat bandwidth, dan tangguh terhadap gangguan jaringan.
+CashWise menggunakan protokol sinkronisasi dua arah (**Bidirectional Delta Sync**) yang efisien, hemat bandwidth, dan tangguh terhadap gangguan jaringan.
 
 ---
 

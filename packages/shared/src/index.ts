@@ -1,5 +1,5 @@
 /**
- * FinFlow Shared Domain Models & Synchronization Protocols
+ * CashWise Shared Domain Models & Synchronization Protocols
  */
 
 export type TransactionType = 'INCOME' | 'EXPENSE' | 'TRANSFER';
