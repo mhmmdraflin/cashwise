@@ -109,3 +109,14 @@ Hanya terdapat pada client (Web IndexedDB dan Flutter SQLite):
 | `createdAt` | TIMESTAMP | Waktu antrean dibuat |
 | `status` | VARCHAR(20) | `PENDING`, `SYNCING`, `FAILED` |
 | `retryCount` | INTEGER | Jumlah percobaan pengiriman |
+
+---
+
+## 3. Implementasi Skrip DDL & Engine Lokal
+
+Struktur skema ini diimplementasikan secara konkret pada artefak kode berikut:
+- **SQLite (Mobile Flutter & SQLite-WASM):** [sqlite_schema.sql](file:///Users/mhmmdraflin/Cashwise/cashwise/packages/shared/sql/sqlite_schema.sql)
+- **PostgreSQL (Cloud Database):** [postgres_schema.sql](file:///Users/mhmmdraflin/Cashwise/cashwise/packages/shared/sql/postgres_schema.sql)
+- **Web Native IndexedDB Storage Engine:** [indexeddb.ts](file:///Users/mhmmdraflin/Cashwise/cashwise/packages/shared/src/storage/indexeddb.ts)
+- **Model Dart & SQLite Mapping:** [models.dart](file:///Users/mhmmdraflin/Cashwise/cashwise/packages/shared/dart/models.dart)
+

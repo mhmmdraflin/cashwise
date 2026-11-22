@@ -69,8 +69,8 @@ cashwise/
 1. **Tahap 1 – Persiapan File dan Folder** *(Status: Selesai ✅)*
 2. **Tahap 2 – Instalasi Tools dan Skills** *(Status: Selesai ✅)*
 3. **Tahap 3 – Discovery dan Requirements** *(Status: Selesai ✅)*
-4. **Tahap 4 – Arsitektur dan Database** *(Status: Siap Dikerjakan ⏳)*
-5. **Tahap 5 – UI/UX dan Design System (Anti-Slop)**
+4. **Tahap 4 – Arsitektur dan Database** *(Status: Selesai ✅)*
+5. **Tahap 5 – UI/UX dan Design System (Anti-Slop)** *(Status: Siap Dikerjakan ⏳)*
 6. **Tahap 6 – Workspace dan Context Engineering**
 7. **Tahap 7 – Development (Vertical Slicing: Slices 1–9)**
 8. **Tahap 8 – Testing, Security & Quality Assurance**

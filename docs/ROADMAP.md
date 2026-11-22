@@ -30,7 +30,17 @@ Roadmap ini merinci implementasi bertahap dari awal hingga siap produksi sesuai 
 
 ---
 
-## 📌 Tahap 4 – Arsitektur dan Database (Status: TERJADWAL / SIAP DIJALANKAN ⏳)
+## 📌 Tahap 4 – Arsitektur dan Database (Status: SELESAI ✅)
+- [x] Kontrak domain model, interface penyimpanan, dan validasi runtime di `packages/shared/src/`.
+- [x] Implementasi engine penyimpanan lokal Web (Native IndexedDB) di `packages/shared/src/storage/indexeddb.ts`.
+- [x] Implementasi skema SQLite lokal untuk Mobile Flutter di `packages/shared/sql/sqlite_schema.sql` dan model Dart di `packages/shared/dart/models.dart`.
+- [x] Implementasi skema DDL PostgreSQL Cloud di `packages/shared/sql/postgres_schema.sql`.
+- [x] Spesifikasi API Cloud REST & Real-time SSE di `docs/API_SPEC.md`.
+- [x] Protokol dan strategi sinkronisasi hybrid (Offline-First) di `docs/SYNC_STRATEGY.md`.
+
+---
+
+## 📌 Tahap 5 – UI/UX dan Design System (Anti-Slop) (Status: SIAP DIKERJAKAN ⏳)
 - [ ] **Fase 3.1: Perencanaan & Domain Modeling**
   - Finalisasi DTO dan validasi skema (Zod / TypeScript / Dart data classes).
 - [ ] **Fase 3.2: Arsitektur Database & Local Storage**

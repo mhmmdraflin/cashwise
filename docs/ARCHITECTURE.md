@@ -8,18 +8,18 @@ Dokumen ini menjelaskan arsitektur teknis aplikasi CashWise, dengan fokus pada a
 
 ```
 +-------------------------------------------------------------------------------+
-|                                FINFLOW CLIENTS                                |
+|                                CASHWISE CLIENTS                               |
 +-------------------------------------------------------------------------------+
-|  Aplikasi Web (Next.js / React)           Aplikasi Mobile (Flutter Dart)      |
-|  - UI: Tailwind CSS / Dashboard           - UI: Flutter Material 3            |
-|  - Local Store: IndexedDB / SQLite-WASM   - Local Store: SQLite (sqflite)     |
-|  - Offline Sync Queue Manager             - Offline Sync Queue Manager        |
+|  Aplikasi Web (Next.js App Router)         Aplikasi Mobile (Flutter Dart)     |
+|  - UI: Tailwind CSS / Dashboard            - UI: Flutter Material 3           |
+|  - Local Store: Native IndexedDB           - Local Store: SQLite (sqflite)    |
+|  - Offline Sync Queue Manager              - Offline Sync Queue Manager       |
 +-----------------------+---------------------------------------+---------------+
                         |                                       |
                         | HTTPS (REST / SSE / WebSockets)       |
                         v                                       v
 +-------------------------------------------------------------------------------+
-|                       FINFLOW CLOUD BACKEND (SYNC ENGINE)                    |
+|                      CASHWISE CLOUD BACKEND (SYNC ENGINE)                     |
 +-------------------------------------------------------------------------------+
 |  - JWT Authentication & RBAC Layer                                            |
 |  - Sync Dispatcher & Delta Processor                                          |
@@ -49,10 +49,10 @@ CashWise dirancang agar pengguna tidak pernah terganggu oleh kelambatan jaringan
 
 ## 3. Komponen Arsitektur Utama
 
-### 3.1 Client Layer
-- **Web App (`apps/web`)**: Dibangun dengan framework modern Next.js/React, responsif untuk layar smartphone, tablet, maupun layar desktop lebar. Menggunakan IndexedDB/Wasm SQLite untuk penyimpanan lokal di browser.
-- **Mobile App (`apps/mobile`)**: Dibangun dengan Flutter untuk performa native 60-120fps di iOS dan Android. Menggunakan SQLite (`sqflite`) untuk penyimpanan lokal.
-- **Shared Types (`packages/shared`)**: Berisi interface domain, validasi skema data, dan DTO sinkronisasi agar Web dan Mobile memiliki kontrak data yang persis sama.
+### 3.1 Client Layer (Prioritas Penyimpanan Lokal Pertama)
+- **Web App (`web`)**: Mengutamakan penyimpanan lokal peramban menggunakan **Native IndexedDB** (`cashwise_local_db`). Semua operasi CRUD akun, kategori, anggaran, dan pencatatan transaksi terjadi secara langsung dan tersimpan permanen di perangkat pengguna tanpa memerlukan koneksi backend.
+- **Mobile App (`mobile`)**: Mengutamakan penyimpanan lokal perangkat menggunakan **SQLite (`sqflite`)** (`cashwise.db`). Operasi mutasi saldo dan transaksi dijalankan dalam SQL Transaction atomik untuk menjamin konsistensi data.
+- **Shared Types & Storage (`packages/shared`)**: Berisi interface domain, validasi skema data runtime, engine `CashWiseIndexedDbStorage` untuk Web, model Dart untuk Mobile, dan DTO sinkronisasi agar Web dan Mobile memiliki kontrak data yang 100% konsisten.
 
 ### 3.2 Cloud Sync Engine (`packages/server`)
 - Menerima mutasi perubahan dari client (delta payload).
