@@ -15,15 +15,22 @@ Roadmap ini merinci implementasi bertahap dari awal hingga siap produksi sesuai 
 
 ---
 
-## 📌 Tahap 2 – Instalasi Tools dan Skills (Status: MENUNGGU VERIFIKASI TAHAP 1 ⏳)
-- [ ] Verifikasi ketersediaan dan integrasi plugin **Anti-Slop** (`antislop`, `antislop-ui`, `antislop-code`, `antislop-human`, `antislop-copywriting`, `antislop-layoutmobile`).
-- [ ] Instalasi dan konfigurasi aturan **Ponytail** (`DietrichGebert/ponytail`) untuk membatasi kompleksitas berlebih dan menegakkan prinsip YAGNI.
-- [ ] Instalasi plugin **Vercel** (`antigravity-plugins-partners/plugin/vercel-plugin`) dan skills pendukung pengembangan.
-- [ ] Pengujian menyeluruh tools dan skills sebelum masuk ke fase coding.
+## 📌 Tahap 2 – Instalasi Tools dan Skills (Status: SELESAI ✅)
+- [x] Verifikasi ketersediaan dan integrasi plugin **Anti-Slop** (`antislop`, `antislop-ui`, `antislop-code`, `antislop-human`, `antislop-copywriting`, `antislop-layoutmobile`).
+- [x] Instalasi dan konfigurasi aturan **Ponytail** (`DietrichGebert/ponytail`) untuk membatasi kompleksitas berlebih dan menegakkan prinsip YAGNI.
+- [x] Instalasi plugin **Vercel** (`antigravity-plugins-partners/plugin/vercel-plugin`) dan skills pendukung pengembangan.
+- [x] Panduan agen terpusat di `AGENTS.md` dan design guidelines di `DESIGN.md`.
 
 ---
 
-## 📌 Tahap 3 – Pengembangan Project (Status: TERJADWAL 📅)
+## 📌 Tahap 3 – Discovery dan Requirements (Status: SELESAI ✅)
+- [x] Penyusunan Product Requirements Document lengkap di `docs/PRD.md`.
+- [x] Penyusunan spesifikasi rinci modul fitur dan Acceptance Criteria (Gherkin) di `docs/FEATURES.md`.
+- [x] Penyusunan diagram alur pengguna (Mermaid User Flows) di `docs/USER_FLOW.md`.
+
+---
+
+## 📌 Tahap 4 – Arsitektur dan Database (Status: TERJADWAL / SIAP DIJALANKAN ⏳)
 - [ ] **Fase 3.1: Perencanaan & Domain Modeling**
   - Finalisasi DTO dan validasi skema (Zod / TypeScript / Dart data classes).
 - [ ] **Fase 3.2: Arsitektur Database & Local Storage**
