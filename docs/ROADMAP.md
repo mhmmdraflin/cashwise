@@ -40,22 +40,46 @@ Roadmap ini merinci implementasi bertahap dari awal hingga siap produksi sesuai 
 
 ---
 
-## 📌 Tahap 5 – UI/UX dan Design System (Anti-Slop) (Status: SIAP DIKERJAKAN ⏳)
-- [ ] **Fase 3.1: Perencanaan & Domain Modeling**
-  - Finalisasi DTO dan validasi skema (Zod / TypeScript / Dart data classes).
-- [ ] **Fase 3.2: Arsitektur Database & Local Storage**
-  - Implementasi SQLite lokal di Flutter (sqflite / drift).
-  - Implementasi local storage di Web (IndexedDB / Dexie / Wasm SQLite).
-  - Skema PostgreSQL di cloud backend.
-- [ ] **Fase 3.3: Engine Sinkronisasi Hybrid (Offline-First)**
-  - Implementasi `sync_queue` lokal pada Web dan Mobile.
-  - Implementasi sinkronisasi delta dua arah dan resolusi konflik di backend server.
-- [ ] **Fase 3.4: Pengembangan UI/UX (Anti-Slop Design)**
-  - Desain dashboard Web responsif (ringkasan saldo, grafik arus kas, filter kategori).
-  - Desain aplikasi Mobile Flutter (Material 3 modern, gesture intuitif, fast data entry).
-- [ ] **Fase 3.5: Testing, Keamanan & Verifikasi**
-  - Pengujian skenario offline, transisi offline-ke-online, pengujian multi-perangkat.
-  - Audit kode dengan Ponytail dan Anti-Slop checklist.
-- [ ] **Fase 3.6: Deployment & Dokumentasi Rilis**
-  - Deployment Web ke Vercel.
-  - Setup build release Flutter untuk Android & iOS.
+## 📌 Tahap 5 – UI/UX dan Design System (Anti-Slop) (Status: SELESAI ✅)
+- [x] Panduan sistem desain dan spesifikasi komponen anti-slop di `docs/DESIGN_SYSTEM.md`.
+- [x] Token desain Web & Tailwind CSS preset di `packages/shared/src/theme/`.
+- [x] Tema Material 3 & token Flutter Dart di `packages/shared/dart/theme.dart`.
+- [x] Utilitas pemformat angka moneter tabular Indonesia (`formatCurrency`, `formatCompactCurrency`).
+- [x] Matriks kontras aksesibilitas WCAG AA (semua rasio teks >= 4.5:1).
+
+---
+
+## 📌 Tahap 6 – Workspace dan Context Engineering (Status: SIAP DIKERJAKAN ⏳)
+- [ ] Penyiapan struktur monorepo terpadu & workspace linking (`web`, `mobile`, `packages/shared`).
+- [ ] Konfigurasi scripts build, lint, dan bundle checking.
+- [ ] Penyiapan context engineering & agent memory rules untuk development.
+
+---
+
+## 📌 Tahap 7 – Development (Vertical Slicing: Slices 1–9) (Status: TERJADWAL 📅)
+- [ ] **Slice 1:** Scaffolding Web (Next.js App Router) & Mobile (Flutter) dengan local storage terintegrasi.
+- [ ] **Slice 2:** Manajemen Akun/Kantong Keuangan (CRUD Akun, Saldo Real-Time).
+- [ ] **Slice 3:** Pencatatan Transaksi Kilat (Pemasukan, Pengeluaran, Transfer Antar-Kantong).
+- [ ] **Slice 4:** Manajemen Kategori & Visual Tagging.
+- [ ] **Slice 5:** Penganggaran & Batas Pengeluaran Bulanan (Budgeting & Alerts).
+- [ ] **Slice 6:** Dashboard Analitik & Laporan Arus Kas (Net Worth Card, Charts).
+- [ ] **Slice 7:** Ekspor Data Transaksi (CSV & JSON).
+- [ ] **Slice 8:** Sinkronisasi Hybrid Background Worker & Queue Processing.
+- [ ] **Slice 9:** Polish UI/UX, Haptic Feedback & Offline Resilience.
+
+---
+
+## 📌 Tahap 8 – Testing, Security & Quality Assurance
+- [ ] Pengujian skenario offline, transisi offline-ke-online, pengujian multi-perangkat.
+- [ ] Audit kode dengan Ponytail dan Anti-Slop checklist.
+
+---
+
+## 📌 Tahap 9 – Deployment dan Release
+- [ ] Deployment Web ke Vercel.
+- [ ] Setup build release Flutter untuk Android & iOS.
+
+---
+
+## 📌 Tahap 10 – Final Review dan Handover
+- [ ] Evaluasi kepatuhan arsitektur, verifikasi zero data loss, dan serah terima proyek.
