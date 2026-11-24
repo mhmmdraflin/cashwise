@@ -17,6 +17,7 @@ lerna-debug.log*
 *.cert
 
 # Build outputs - Web & Backend
+*.tsbuildinfo
 web/.next/
 web/out/
 web/build/

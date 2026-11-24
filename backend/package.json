@@ -1,0 +1,10 @@
+{
+  "name": "@cashwise/backend",
+  "version": "0.1.0",
+  "private": true,
+  "description": "CashWise Cloud Sync Engine & REST API",
+  "scripts": {
+    "dev": "echo 'Backend service will be activated in Cloud Sync phase'",
+    "build": "echo 'Backend build'"
+  }
+}

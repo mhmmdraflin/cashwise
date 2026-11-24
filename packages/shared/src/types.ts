@@ -80,7 +80,7 @@ export interface SyncQueueItem {
   action: SyncAction;
   payload: string; // JSON string of snapshot
   createdAt: string; // ISO 8601
-  status: 'PENDING' | 'SYNCING' | 'FAILED';
+  status: 'PENDING' | 'SYNCING' | 'FAILED' | 'SYNCED';
   retryCount: number;
   lastError?: string | null;
 }

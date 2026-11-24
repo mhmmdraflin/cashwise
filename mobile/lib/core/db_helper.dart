@@ -1,0 +1,145 @@
+import 'package:sqflite/sqflite.dart';
+import 'package:path/path.dart';
+
+class LocalDatabaseHelper {
+  static final LocalDatabaseHelper instance = LocalDatabaseHelper._init();
+  static Database? _database;
+
+  LocalDatabaseHelper._init();
+
+  Future<Database> get database async {
+    if (_database != null) return _database!;
+    _database = await _initDB('cashwise_local.db');
+    return _database!;
+  }
+
+  Future<Database> _initDB(String filePath) async {
+    final dbPath = await getDatabasesPath();
+    final path = join(dbPath, filePath);
+
+    return await openDatabase(
+      path,
+      version: 1,
+      onCreate: _createDB,
+    );
+  }
+
+  Future<void> _createDB(Database db, int version) async {
+    // 1. Table: users
+    await db.execute('''
+      CREATE TABLE users (
+        id TEXT PRIMARY KEY NOT NULL,
+        email TEXT NOT NULL UNIQUE,
+        name TEXT NOT NULL,
+        currency TEXT NOT NULL DEFAULT 'IDR',
+        createdAt TEXT NOT NULL,
+        updatedAt TEXT NOT NULL,
+        version INTEGER NOT NULL DEFAULT 1
+      )
+    ''');
+
+    // 2. Table: accounts
+    await db.execute('''
+      CREATE TABLE accounts (
+        id TEXT PRIMARY KEY NOT NULL,
+        userId TEXT NOT NULL,
+        name TEXT NOT NULL,
+        type TEXT NOT NULL,
+        balance REAL NOT NULL DEFAULT 0.0,
+        color TEXT NOT NULL DEFAULT '#10B981',
+        icon TEXT NOT NULL DEFAULT 'wallet',
+        createdAt TEXT NOT NULL,
+        updatedAt TEXT NOT NULL,
+        deletedAt TEXT NULL,
+        version INTEGER NOT NULL DEFAULT 1
+      )
+    ''');
+
+    // 3. Table: categories
+    await db.execute('''
+      CREATE TABLE categories (
+        id TEXT PRIMARY KEY NOT NULL,
+        userId TEXT NOT NULL,
+        name TEXT NOT NULL,
+        type TEXT NOT NULL,
+        icon TEXT NOT NULL DEFAULT 'tag',
+        color TEXT NOT NULL DEFAULT '#F43F5E',
+        isDefault INTEGER NOT NULL DEFAULT 0,
+        createdAt TEXT NOT NULL,
+        updatedAt TEXT NOT NULL,
+        deletedAt TEXT NULL,
+        version INTEGER NOT NULL DEFAULT 1
+      )
+    ''');
+
+    // 4. Table: transactions
+    await db.execute('''
+      CREATE TABLE transactions (
+        id TEXT PRIMARY KEY NOT NULL,
+        userId TEXT NOT NULL,
+        accountId TEXT NOT NULL,
+        toAccountId TEXT NULL,
+        categoryId TEXT NULL,
+        amount REAL NOT NULL,
+        type TEXT NOT NULL,
+        date TEXT NOT NULL,
+        note TEXT NULL,
+        tags TEXT NULL,
+        syncStatus TEXT NOT NULL DEFAULT 'PENDING',
+        createdAt TEXT NOT NULL,
+        updatedAt TEXT NOT NULL,
+        deletedAt TEXT NULL,
+        version INTEGER NOT NULL DEFAULT 1
+      )
+    ''');
+
+    // 5. Table: budgets
+    await db.execute('''
+      CREATE TABLE budgets (
+        id TEXT PRIMARY KEY NOT NULL,
+        userId TEXT NOT NULL,
+        categoryId TEXT NOT NULL,
+        limitAmount REAL NOT NULL,
+        period TEXT NOT NULL DEFAULT 'MONTHLY',
+        startDate TEXT NOT NULL,
+        endDate TEXT NOT NULL,
+        createdAt TEXT NOT NULL,
+        updatedAt TEXT NOT NULL,
+        deletedAt TEXT NULL,
+        version INTEGER NOT NULL DEFAULT 1
+      )
+    ''');
+
+    // 6. Table: sync_queue
+    await db.execute('''
+      CREATE TABLE sync_queue (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        entityType TEXT NOT NULL,
+        entityId TEXT NOT NULL,
+        action TEXT NOT NULL,
+        payload TEXT NOT NULL,
+        createdAt TEXT NOT NULL,
+        status TEXT NOT NULL DEFAULT 'PENDING',
+        retryCount INTEGER NOT NULL DEFAULT 0,
+        lastError TEXT NULL
+      )
+    ''');
+
+    // Initial Seeds
+    final now = DateTime.now().toIso8601String();
+    await db.rawInsert('''
+      INSERT INTO users (id, email, name, currency, createdAt, updatedAt, version)
+      VALUES ('00000000-0000-4000-8000-000000000001', 'local-user@cashwise.app', 'Pengguna CashWise', 'IDR', '$now', '$now', 1)
+    ''');
+
+    await db.rawInsert('''
+      INSERT INTO accounts (id, userId, name, type, balance, color, icon, createdAt, updatedAt, version)
+      VALUES ('10000000-0000-4000-8000-000000000001', '00000000-0000-4000-8000-000000000001', 'Dompet Tunai', 'CASH', 500000.0, '#10B981', 'wallet', '$now', '$now', 1)
+    ''');
+  }
+
+  Future<void> close() async {
+    final db = await instance.database;
+    db.close();
+  }
+}

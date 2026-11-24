@@ -597,8 +597,8 @@ export class CashWiseIndexedDbStorage implements ICashWiseStorage {
     const all = await this.getAllFromStore<SyncQueueItem>('sync_queue');
     const synced = all.filter((i) => i.status === 'SYNCED');
     for (const item of synced) {
-      if (item.id) {
-        await this.runTx('sync_queue', 'readwrite', (s) => s.delete(item.id));
+      if (item.id !== undefined) {
+        await this.runTx('sync_queue', 'readwrite', (s) => s.delete(item.id!));
       }
     }
   }
