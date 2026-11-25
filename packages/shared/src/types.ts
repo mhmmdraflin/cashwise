@@ -32,31 +32,35 @@ export interface User extends BaseEntity {
 
 export interface Account extends BaseEntity {
   userId: string;
-  name: string; // e.g. "BCA Tabungan", "Dompet Tunai", "GoPay"
+  name: string; // e.g. "BCA", "Superbank", "Blu BCA", "Bibit"
   type: AccountType;
+  group: string; // "Cash", "Accounts", "Savings", "Investment"
   balance: number; // Tabular monetary figure
+  description?: string; // Deskripsi akun
+  order: number; // Sequence index for sorting / move-to-top
+  isGroupHidden?: boolean; // Hide Group toggle
   color: string; // Hex color e.g. "#10B981"
-  icon: string; // Identifier e.g. "wallet", "credit-card"
+  icon: string; // Identifier or emoji
 }
 
 export interface Category extends BaseEntity {
   userId: string;
-  name: string; // e.g. "Makanan & Minuman", "Gaji", "Transportasi"
+  name: string; // e.g. "Makanan", "Transportasi", "Lainnya"
   type: CategoryType;
-  icon: string;
+  icon: string; // Emoticon/Emoji e.g. "🍔", "🚗", "💼", "🛒"
   color: string;
   isDefault?: boolean;
 }
 
 export interface Transaction extends BaseEntity {
   userId: string;
-  accountId: string;
-  toAccountId?: string | null; // For transfers
-  categoryId?: string | null;
+  accountId: string; // Source account (Income destination / Expense source / Transfer from)
+  toAccountId?: string | null; // Destination account (Only for Transfer)
+  categoryId?: string | null; // Category (For Income/Expense)
   amount: number; // Tabular monetary figure, must be > 0
   type: TransactionType;
-  date: string; // ISO 8601 Date of transaction
-  note?: string;
+  date: string; // ISO 8601 Date of transaction (YYYY-MM-DD or full timestamp)
+  note?: string; // Deskripsi transaksi
   tags?: string[];
   syncStatus?: SyncStatus;
 }
@@ -130,3 +134,17 @@ export interface DatabaseStats {
   pendingSyncCount: number;
   netWorth: number;
 }
+
+export const PRESET_EMOJIS = [
+  '🍔', '☕', '🍜', '🍕', '🚗', '⛽', '🚌', '🛵',
+  '🏠', '⚡', '💧', '📶', '🛒', '🛍️', '👕', '💊',
+  '🎮', '🍿', '🎬', '✈️', '💼', '💵', '📈', '🎁',
+  '🎓', '📱', '🏋️', '📚', '👶', '🐱', '✨', '🏷️',
+] as const;
+
+export const DEFAULT_ACCOUNT_GROUPS = [
+  'Cash',
+  'Accounts',
+  'Savings',
+  'Investment',
+] as const;

@@ -41,6 +41,8 @@ export interface ICashWiseStorage {
   createAccount(account: Omit<Account, 'id' | 'createdAt' | 'updatedAt' | 'version'>): Promise<Account>;
   updateAccount(id: string, updates: Partial<Omit<Account, 'id' | 'createdAt' | 'userId'>>): Promise<Account>;
   deleteAccount(id: string): Promise<void>; // Soft-delete (tombstone)
+  moveAccountToTop(id: string): Promise<void>; // Reorder: Move to top of list
+  toggleGroupHidden(userId: string, group: string, isHidden: boolean): Promise<void>;
 
   // Categories
   getCategories(userId: string, includeDeleted?: boolean): Promise<Category[]>;

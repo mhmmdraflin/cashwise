@@ -76,7 +76,11 @@ class Account extends BaseEntity {
   final String userId;
   final String name;
   final String type;
+  final String group;
   final double balance;
+  final String? description;
+  final int order;
+  final bool isGroupHidden;
   final String color;
   final String icon;
 
@@ -89,7 +93,11 @@ class Account extends BaseEntity {
     required this.userId,
     required this.name,
     required this.type,
+    this.group = 'Accounts',
     required this.balance,
+    this.description,
+    this.order = 0,
+    this.isGroupHidden = false,
     required this.color,
     required this.icon,
   });
@@ -100,7 +108,11 @@ class Account extends BaseEntity {
       'userId': userId,
       'name': name,
       'type': type,
+      'group': group,
       'balance': balance,
+      'description': description,
+      'order': order,
+      'isGroupHidden': isGroupHidden ? 1 : 0,
       'color': color,
       'icon': icon,
       'createdAt': createdAt,
@@ -116,7 +128,11 @@ class Account extends BaseEntity {
       userId: map['userId'] as String,
       name: map['name'] as String,
       type: map['type'] as String,
+      group: map['group'] as String? ?? 'Accounts',
       balance: (map['balance'] as num).toDouble(),
+      description: map['description'] as String?,
+      order: map['order'] as int? ?? 0,
+      isGroupHidden: (map['isGroupHidden'] as int? ?? 0) == 1,
       color: map['color'] as String,
       icon: map['icon'] as String,
       createdAt: map['createdAt'] as String,
@@ -129,7 +145,11 @@ class Account extends BaseEntity {
   Account copyWith({
     String? name,
     String? type,
+    String? group,
     double? balance,
+    String? description,
+    int? order,
+    bool? isGroupHidden,
     String? color,
     String? icon,
     String? updatedAt,
@@ -140,7 +160,11 @@ class Account extends BaseEntity {
       userId: userId,
       name: name ?? this.name,
       type: type ?? this.type,
+      group: group ?? this.group,
       balance: balance ?? this.balance,
+      description: description ?? this.description,
+      order: order ?? this.order,
+      isGroupHidden: isGroupHidden ?? this.isGroupHidden,
       color: color ?? this.color,
       icon: icon ?? this.icon,
       createdAt: createdAt,

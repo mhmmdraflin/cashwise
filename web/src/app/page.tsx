@@ -1,39 +1,57 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { PlusCircle, RefreshCw, Smartphone } from 'lucide-react';
-import { Account, Budget, Category, Transaction, TransactionType } from '@cashwise/shared';
+import {
+  Receipt,
+  Building2,
+  Tag,
+  BarChart3,
+  RefreshCw,
+  PlusCircle,
+  HardDrive,
+  Download,
+} from 'lucide-react';
+import {
+  Account,
+  AccountType,
+  Category,
+  CategoryType,
+  Transaction,
+  TransactionType,
+  formatCurrency,
+} from '@cashwise/shared';
 import { Navbar } from '@/components/Navbar';
 import { NetWorthCard } from '@/components/NetWorthCard';
-import { AccountList } from '@/components/AccountList';
-import { BudgetOverview } from '@/components/BudgetOverview';
-import { TransactionList } from '@/components/TransactionList';
-import { TransactionModal } from '@/components/TransactionModal';
+import { TransactionManager } from '@/components/TransactionManager';
+import { AccountManager } from '@/components/AccountManager';
+import { CategoryManager } from '@/components/CategoryManager';
+import { StatsView } from '@/components/StatsView';
 import { getStorage, DEFAULT_USER_ID } from '@/lib/db';
 
+type MainTab = 'transactions' | 'accounts' | 'categories' | 'stats';
+
 export default function DashboardPage() {
+  const [activeTab, setActiveTab] = useState<MainTab>('transactions');
   const [isLoading, setIsLoading] = useState(true);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  // Core Data States
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
-  const [budgets, setBudgets] = useState<Budget[]>([]);
 
-  // Load data from local IndexedDB
+  // Load all data from IndexedDB
   async function loadData() {
     try {
       const storage = await getStorage();
-      const [accs, cats, txs, bdgs] = await Promise.all([
+      const [accs, cats, txs] = await Promise.all([
         storage.getAccounts(DEFAULT_USER_ID),
         storage.getCategories(DEFAULT_USER_ID),
-        storage.getTransactions(DEFAULT_USER_ID, { limit: 20 }),
-        storage.getBudgets(DEFAULT_USER_ID),
+        storage.getTransactions(DEFAULT_USER_ID),
       ]);
 
       setAccounts(accs);
       setCategories(cats);
       setTransactions(txs);
-      setBudgets(bdgs);
     } catch (err) {
       console.error('Gagal memuat data dari IndexedDB:', err);
     } finally {
@@ -45,7 +63,7 @@ export default function DashboardPage() {
     loadData();
   }, []);
 
-  // Handle adding transaction
+  // --- TRANSACTION HANDLERS ---
   async function handleCreateTransaction(data: {
     type: TransactionType;
     accountId: string;
@@ -66,13 +84,28 @@ export default function DashboardPage() {
       note: data.note,
       date: data.date,
     });
-
     await loadData();
   }
 
-  // Handle deleting transaction (reverts balance atomicaly)
+  async function handleUpdateTransaction(
+    id: string,
+    data: {
+      type: TransactionType;
+      accountId: string;
+      toAccountId?: string;
+      categoryId?: string;
+      amount: number;
+      note?: string;
+      date: string;
+    }
+  ) {
+    const storage = await getStorage();
+    await storage.updateTransaction(id, data);
+    await loadData();
+  }
+
   async function handleDeleteTransaction(id: string) {
-    if (!confirm('Hapus transaksi ini? Saldo akun akan dikembalikan secara otomatis.')) {
+    if (!confirm('Hapus transaksi ini? Saldo rekening akan dikembalikan otomatis.')) {
       return;
     }
     const storage = await getStorage();
@@ -80,7 +113,134 @@ export default function DashboardPage() {
     await loadData();
   }
 
-  // Calculate aggregations
+  // --- ACCOUNT HANDLERS ---
+  async function handleCreateAccount(data: {
+    name: string;
+    type: AccountType;
+    group: string;
+    balance: number;
+    description?: string;
+  }) {
+    const storage = await getStorage();
+    await storage.createAccount({
+      userId: DEFAULT_USER_ID,
+      name: data.name,
+      type: data.type,
+      group: data.group,
+      balance: data.balance,
+      description: data.description,
+      color: '#10B981',
+      icon: data.group === 'Cash' ? '💵' : data.group === 'Investment' ? '📈' : '💳',
+      order: accounts.length + 1,
+      isGroupHidden: false,
+    });
+    await loadData();
+  }
+
+  async function handleUpdateAccount(
+    id: string,
+    data: {
+      name?: string;
+      group?: string;
+      balance?: number;
+      description?: string;
+    }
+  ) {
+    const storage = await getStorage();
+    await storage.updateAccount(id, data);
+    await loadData();
+  }
+
+  async function handleDeleteAccount(id: string) {
+    if (!confirm('Hapus akun ini? Riwayat transaksi lama tetap dipertahankan.')) {
+      return;
+    }
+    const storage = await getStorage();
+    await storage.deleteAccount(id);
+    await loadData();
+  }
+
+  async function handleMoveAccountToTop(id: string) {
+    const storage = await getStorage();
+    await storage.moveAccountToTop(id);
+    await loadData();
+  }
+
+  async function handleToggleGroupHidden(group: string, isHidden: boolean) {
+    const storage = await getStorage();
+    await storage.toggleGroupHidden(DEFAULT_USER_ID, group, isHidden);
+    await loadData();
+  }
+
+  // --- CATEGORY HANDLERS ---
+  async function handleCreateCategory(data: {
+    name: string;
+    type: CategoryType;
+    icon: string;
+    color: string;
+  }) {
+    const storage = await getStorage();
+    await storage.createCategory({
+      userId: DEFAULT_USER_ID,
+      name: data.name,
+      type: data.type,
+      icon: data.icon,
+      color: data.color,
+      isDefault: false,
+    });
+    await loadData();
+  }
+
+  async function handleUpdateCategory(
+    id: string,
+    data: {
+      name?: string;
+      type?: CategoryType;
+      icon?: string;
+      color?: string;
+    }
+  ) {
+    const storage = await getStorage();
+    await storage.updateCategory(id, data);
+    await loadData();
+  }
+
+  async function handleDeleteCategory(id: string) {
+    if (!confirm('Hapus kategori ini?')) {
+      return;
+    }
+    const storage = await getStorage();
+    await storage.deleteCategory(id);
+    await loadData();
+  }
+
+  // --- EXPORT HANDLER ---
+  function handleExportData(format: 'json' | 'csv') {
+    if (format === 'json') {
+      const dataStr = JSON.stringify({ accounts, categories, transactions }, null, 2);
+      const blob = new Blob([dataStr], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `cashwise_export_${new Date().toISOString().split('T')[0]}.json`;
+      a.click();
+    } else {
+      let csv = 'ID,Tanggal,Tipe,Nominal,Kategori,Akun,Catatan\n';
+      for (const t of transactions) {
+        const cat = categories.find((c) => c.id === t.categoryId)?.name || '';
+        const acc = accounts.find((a) => a.id === t.accountId)?.name || '';
+        csv += `"${t.id}","${t.date}","${t.type}","${t.amount}","${cat}","${acc}","${t.note || ''}"\n`;
+      }
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `cashwise_transactions_${new Date().toISOString().split('T')[0]}.csv`;
+      a.click();
+    }
+  }
+
+  // Aggregated totals
   const totalBalance = accounts.reduce((sum, a) => sum + (a.balance || 0), 0);
   const totalIncome = transactions
     .filter((t) => t.type === 'INCOME')
@@ -89,80 +249,132 @@ export default function DashboardPage() {
     .filter((t) => t.type === 'EXPENSE')
     .reduce((sum, t) => sum + t.amount, 0);
 
-  const expensesByCategory: Record<string, number> = {};
-  for (const t of transactions) {
-    if (t.type === 'EXPENSE' && t.categoryId) {
-      expensesByCategory[t.categoryId] = (expensesByCategory[t.categoryId] || 0) + t.amount;
-    }
-  }
-
   return (
     <div className="min-h-screen flex flex-col bg-slate-50">
       <Navbar />
 
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
-        {/* Top Action Bar */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight text-slate-900">
-              Ringkasan Keuangan
-            </h1>
-            <p className="text-sm text-slate-500 mt-0.5">
-              Data tersimpan lokal di IndexedDB peramban Anda.
-            </p>
-          </div>
-
-          <div className="flex items-center space-x-3">
-            <button
-              onClick={() => loadData()}
-              className="p-2.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-600 transition-colors"
-              title="Muat ulang data lokal"
-            >
-              <RefreshCw className="w-4 h-4" />
-            </button>
-            <button
-              onClick={() => setIsModalOpen(true)}
-              className="flex items-center space-x-2 px-4 py-2.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-sm shadow-sm transition-colors"
-            >
-              <PlusCircle className="w-4 h-4" />
-              <span>Catat Transaksi</span>
-            </button>
-          </div>
-        </div>
-
-        {/* Hero Card: Net Worth */}
+        {/* Top Summary Banner */}
         <NetWorthCard
           totalBalance={totalBalance}
           totalIncome={totalIncome}
           totalExpense={totalExpense}
         />
 
-        {/* 2-Column Grid: Accounts & Budgets */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <AccountList accounts={accounts} />
-          <BudgetOverview
-            budgets={budgets}
-            categories={categories}
-            expensesByCategory={expensesByCategory}
-          />
+        {/* Navigation Tabs Bar */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-slate-200 pb-2">
+          {/* Main Segmented Tabs */}
+          <div className="flex space-x-1 p-1 bg-slate-200/70 rounded-xl overflow-x-auto">
+            <button
+              onClick={() => setActiveTab('transactions')}
+              className={`flex items-center space-x-2 py-2 px-4 rounded-lg text-xs sm:text-sm font-bold transition-all whitespace-nowrap ${
+                activeTab === 'transactions'
+                  ? 'bg-white text-indigo-600 shadow-sm'
+                  : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              <Receipt className="w-4 h-4" />
+              <span>Transaksi</span>
+            </button>
+
+            <button
+              onClick={() => setActiveTab('accounts')}
+              className={`flex items-center space-x-2 py-2 px-4 rounded-lg text-xs sm:text-sm font-bold transition-all whitespace-nowrap ${
+                activeTab === 'accounts'
+                  ? 'bg-white text-indigo-600 shadow-sm'
+                  : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              <Building2 className="w-4 h-4" />
+              <span>Akun ({accounts.length})</span>
+            </button>
+
+            <button
+              onClick={() => setActiveTab('categories')}
+              className={`flex items-center space-x-2 py-2 px-4 rounded-lg text-xs sm:text-sm font-bold transition-all whitespace-nowrap ${
+                activeTab === 'categories'
+                  ? 'bg-white text-indigo-600 shadow-sm'
+                  : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              <Tag className="w-4 h-4" />
+              <span>Kategori ({categories.length})</span>
+            </button>
+
+            <button
+              onClick={() => setActiveTab('stats')}
+              className={`flex items-center space-x-2 py-2 px-4 rounded-lg text-xs sm:text-sm font-bold transition-all whitespace-nowrap ${
+                activeTab === 'stats'
+                  ? 'bg-white text-indigo-600 shadow-sm'
+                  : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              <BarChart3 className="w-4 h-4" />
+              <span>Statistik (1D/1W/1M/3M/1Y)</span>
+            </button>
+          </div>
+
+          {/* Quick Utility Tools (Refresh & Export) */}
+          <div className="flex items-center space-x-2 self-end sm:self-auto">
+            <button
+              onClick={() => handleExportData('csv')}
+              title="Ekspor CSV"
+              className="flex items-center space-x-1.5 px-3 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-xs font-semibold text-slate-700 transition-colors"
+            >
+              <Download className="w-3.5 h-3.5" />
+              <span>Ekspor CSV</span>
+            </button>
+
+            <button
+              onClick={() => loadData()}
+              title="Refresh Data Lokal"
+              className="p-2 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-600 transition-colors"
+            >
+              <RefreshCw className="w-4 h-4" />
+            </button>
+          </div>
         </div>
 
-        {/* Transactions List */}
-        <TransactionList
-          transactions={transactions}
-          categories={categories}
-          onDeleteTransaction={handleDeleteTransaction}
-        />
-      </main>
+        {/* Tab Content Panes */}
+        {activeTab === 'transactions' && (
+          <TransactionManager
+            transactions={transactions}
+            accounts={accounts}
+            categories={categories}
+            onCreateTransaction={handleCreateTransaction}
+            onUpdateTransaction={handleUpdateTransaction}
+            onDeleteTransaction={handleDeleteTransaction}
+          />
+        )}
 
-      {/* Fast Transaction Entry Modal */}
-      <TransactionModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        accounts={accounts}
-        categories={categories}
-        onSubmit={handleCreateTransaction}
-      />
+        {activeTab === 'accounts' && (
+          <AccountManager
+            accounts={accounts}
+            onRefresh={loadData}
+            onCreateAccount={handleCreateAccount}
+            onUpdateAccount={handleUpdateAccount}
+            onDeleteAccount={handleDeleteAccount}
+            onMoveToTop={handleMoveAccountToTop}
+            onToggleGroupHidden={handleToggleGroupHidden}
+          />
+        )}
+
+        {activeTab === 'categories' && (
+          <CategoryManager
+            categories={categories}
+            onCreateCategory={handleCreateCategory}
+            onUpdateCategory={handleUpdateCategory}
+            onDeleteCategory={handleDeleteCategory}
+          />
+        )}
+
+        {activeTab === 'stats' && (
+          <StatsView
+            transactions={transactions}
+            categories={categories}
+          />
+        )}
+      </main>
     </div>
   );
 }

@@ -63,7 +63,7 @@ Roadmap ini merinci implementasi bertahap dari awal hingga siap produksi sesuai 
 - [x] **Slice 4:** Manajemen Kategori Sistem (Makanan, Transportasi, Tagihan, Belanja, Gaji, dll).
 - [x] **Slice 5:** Penganggaran & Batas Pengeluaran Bulanan (Budgeting & Visual Alerts).
 - [x] **Slice 6:** Dashboard Analitik & Laporan Arus Kas (Net Worth Card, Pemasukan vs Pengeluaran).
-- [ ] **Slice 7:** Ekspor Data Transaksi (CSV & JSON).
+- [x] **Slice 7:** Ekspor Data Transaksi (CSV & JSON).
 - [ ] **Slice 8:** Sinkronisasi Hybrid Background Worker & Queue Processing.
 - [ ] **Slice 9:** Polish UI/UX, Haptic Feedback & Offline Resilience.
 

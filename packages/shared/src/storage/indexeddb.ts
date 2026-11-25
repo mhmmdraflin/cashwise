@@ -46,6 +46,8 @@ export class CashWiseIndexedDbStorage implements ICashWiseStorage {
           const store = db.createObjectStore('accounts', { keyPath: 'id' });
           store.createIndex('userId', 'userId', { unique: false });
           store.createIndex('type', 'type', { unique: false });
+          store.createIndex('group', 'group', { unique: false });
+          store.createIndex('order', 'order', { unique: false });
         }
 
         // 3. Categories Store
@@ -121,6 +123,17 @@ export class CashWiseIndexedDbStorage implements ICashWiseStorage {
       for (const cat of seed.categories) {
         await this.runTx('categories', 'readwrite', (s) => s.put(cat));
       }
+    } else {
+      // Ensure existing accounts have group & order
+      const accounts = await this.getAllFromStore<Account>('accounts');
+      for (let i = 0; i < accounts.length; i++) {
+        const acc = accounts[i];
+        if (!acc.group || acc.order === undefined) {
+          acc.group = acc.group || (acc.type === 'CASH' ? 'Cash' : acc.type === 'INVESTMENT' ? 'Investment' : 'Accounts');
+          acc.order = acc.order ?? (i + 1);
+          await this.runTx('accounts', 'readwrite', (s) => s.put(acc));
+        }
+      }
     }
     this.isSeeded = true;
   }
@@ -184,7 +197,9 @@ export class CashWiseIndexedDbStorage implements ICashWiseStorage {
   // --- ACCOUNTS ---
   async getAccounts(userId: string, includeDeleted = false): Promise<Account[]> {
     const all = await this.getAllFromStore<Account>('accounts');
-    return all.filter((a) => a.userId === userId && (includeDeleted || !a.deletedAt));
+    const filtered = all.filter((a) => a.userId === userId && (includeDeleted || !a.deletedAt));
+    // Sort by order ASC, then createdAt ASC
+    return filtered.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
   }
 
   async getAccountById(id: string): Promise<Account | null> {
@@ -194,9 +209,14 @@ export class CashWiseIndexedDbStorage implements ICashWiseStorage {
 
   async createAccount(accountData: Omit<Account, 'id' | 'createdAt' | 'updatedAt' | 'version'>): Promise<Account> {
     const now = new Date().toISOString();
+    const existingAccounts = await this.getAccounts(accountData.userId);
+    const maxOrder = existingAccounts.reduce((max, a) => Math.max(max, a.order ?? 0), 0);
+
     const account: Account = {
       ...accountData,
       id: generateUuid(),
+      order: accountData.order ?? (maxOrder + 1),
+      isGroupHidden: accountData.isGroupHidden ?? false,
       createdAt: now,
       updatedAt: now,
       version: 1,
@@ -238,6 +258,31 @@ export class CashWiseIndexedDbStorage implements ICashWiseStorage {
 
     await this.runTx('accounts', 'readwrite', (s) => s.put(updated));
     await this.enqueueSync('account', updated.id, 'DELETE', updated);
+  }
+
+  /**
+   * Reorder account to top: "geser list dari bawah ke paling atas"
+   */
+  async moveAccountToTop(id: string): Promise<void> {
+    const existing = await this.getAccountById(id);
+    if (!existing) return;
+
+    const allAccounts = await this.getAccounts(existing.userId);
+    const minOrder = allAccounts.reduce((min, a) => Math.min(min, a.order ?? 0), 1);
+    const newOrder = minOrder - 1;
+
+    await this.updateAccount(id, { order: newOrder });
+  }
+
+  /**
+   * Hide/Show Group toggle
+   */
+  async toggleGroupHidden(userId: string, group: string, isHidden: boolean): Promise<void> {
+    const accounts = await this.getAccounts(userId);
+    const groupAccounts = accounts.filter((a) => a.group === group);
+    for (const acc of groupAccounts) {
+      await this.updateAccount(acc.id, { isGroupHidden: isHidden });
+    }
   }
 
   // --- CATEGORIES ---
@@ -354,7 +399,6 @@ export class CashWiseIndexedDbStorage implements ICashWiseStorage {
       syncStatus: 'PENDING',
     };
 
-    // Atomic update in IndexedDB transaction
     if (!this.db) throw new Error('DB belum aktif.');
 
     return new Promise((resolve, reject) => {
@@ -432,11 +476,19 @@ export class CashWiseIndexedDbStorage implements ICashWiseStorage {
     const existing = await this.getTransactionById(id);
     if (!existing) throw new Error(`Transaksi ${id} tidak ditemukan.`);
 
-    // To cleanly update with balance integrity: revert previous, apply new
+    // Revert previous transaction effects
     await this.deleteTransaction(id);
+
+    // Apply updated transaction
     const newTx = await this.createTransaction({
-      ...existing,
-      ...updates,
+      userId: existing.userId,
+      accountId: updates.accountId ?? existing.accountId,
+      toAccountId: updates.toAccountId !== undefined ? updates.toAccountId : existing.toAccountId,
+      categoryId: updates.categoryId !== undefined ? updates.categoryId : existing.categoryId,
+      amount: updates.amount ?? existing.amount,
+      type: updates.type ?? existing.type,
+      date: updates.date ?? existing.date,
+      note: updates.note !== undefined ? updates.note : existing.note,
     });
     return newTx;
   }

@@ -19,7 +19,7 @@ class LocalDatabaseHelper {
 
     return await openDatabase(
       path,
-      version: 1,
+      version: 2,
       onCreate: _createDB,
     );
   }
@@ -38,14 +38,18 @@ class LocalDatabaseHelper {
       )
     ''');
 
-    // 2. Table: accounts
+    // 2. Table: accounts (with group, description, order, isGroupHidden)
     await db.execute('''
       CREATE TABLE accounts (
         id TEXT PRIMARY KEY NOT NULL,
         userId TEXT NOT NULL,
         name TEXT NOT NULL,
         type TEXT NOT NULL,
+        `group` TEXT NOT NULL DEFAULT 'Accounts',
         balance REAL NOT NULL DEFAULT 0.0,
+        description TEXT NULL,
+        `order` INTEGER NOT NULL DEFAULT 0,
+        isGroupHidden INTEGER NOT NULL DEFAULT 0,
         color TEXT NOT NULL DEFAULT '#10B981',
         icon TEXT NOT NULL DEFAULT 'wallet',
         createdAt TEXT NOT NULL,
@@ -55,14 +59,14 @@ class LocalDatabaseHelper {
       )
     ''');
 
-    // 3. Table: categories
+    // 3. Table: categories (with emoji icon)
     await db.execute('''
       CREATE TABLE categories (
         id TEXT PRIMARY KEY NOT NULL,
         userId TEXT NOT NULL,
         name TEXT NOT NULL,
         type TEXT NOT NULL,
-        icon TEXT NOT NULL DEFAULT 'tag',
+        icon TEXT NOT NULL DEFAULT '🏷️',
         color TEXT NOT NULL DEFAULT '#F43F5E',
         isDefault INTEGER NOT NULL DEFAULT 0,
         createdAt TEXT NOT NULL,
@@ -133,8 +137,22 @@ class LocalDatabaseHelper {
     ''');
 
     await db.rawInsert('''
-      INSERT INTO accounts (id, userId, name, type, balance, color, icon, createdAt, updatedAt, version)
-      VALUES ('10000000-0000-4000-8000-000000000001', '00000000-0000-4000-8000-000000000001', 'Dompet Tunai', 'CASH', 500000.0, '#10B981', 'wallet', '$now', '$now', 1)
+      INSERT INTO accounts (id, userId, name, type, `group`, balance, description, `order`, isGroupHidden, color, icon, createdAt, updatedAt, version)
+      VALUES 
+      ('10000000-0000-4000-8000-000000000001', '00000000-0000-4000-8000-000000000001', 'Dompet Tunai', 'CASH', 'Cash', 500000.0, 'Uang tunai di dompet', 1, 0, '#10B981', '💵', '$now', '$now', 1),
+      ('10000000-0000-4000-8000-000000000002', '00000000-0000-4000-8000-000000000001', 'BCA', 'BANK', 'Accounts', 3500000.0, 'Rekening utama', 2, 0, '#2563EB', '💳', '$now', '$now', 1),
+      ('10000000-0000-4000-8000-000000000003', '00000000-0000-4000-8000-000000000001', 'Superbank', 'BANK', 'Accounts', 1000000.0, 'Bank digital', 3, 0, '#06B6D4', '🏦', '$now', '$now', 1),
+      ('10000000-0000-4000-8000-000000000004', '00000000-0000-4000-8000-000000000001', 'Blu BCA', 'BANK', 'Savings', 5000000.0, 'Tabungan darurat', 4, 0, '#6366F1', '🔒', '$now', '$now', 1),
+      ('10000000-0000-4000-8000-000000000005', '00000000-0000-4000-8000-000000000001', 'Bibit', 'INVESTMENT', 'Investment', 2500000.0, 'Portofolio reksa dana', 5, 0, '#8B5CF6', '📈', '$now', '$now', 1)
+    ''');
+
+    await db.rawInsert('''
+      INSERT INTO categories (id, userId, name, type, icon, color, isDefault, createdAt, updatedAt, version)
+      VALUES 
+      ('20000000-0000-4000-8000-000000000001', '00000000-0000-4000-8000-000000000001', 'Makanan', 'EXPENSE', '🍔', '#F43F5E', 1, '$now', '$now', 1),
+      ('20000000-0000-4000-8000-000000000002', '00000000-0000-4000-8000-000000000001', 'Transportasi', 'EXPENSE', '🚗', '#F97316', 1, '$now', '$now', 1),
+      ('20000000-0000-4000-8000-000000000006', '00000000-0000-4000-8000-000000000001', 'Lainnya', 'EXPENSE', '🏷️', '#64748B', 1, '$now', '$now', 1),
+      ('20000000-0000-4000-8000-000000000010', '00000000-0000-4000-8000-000000000001', 'Gaji', 'INCOME', '💼', '#10B981', 1, '$now', '$now', 1)
     ''');
   }
 
