@@ -19,11 +19,18 @@ class CashWiseApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'CashWise',
-      debugShowCheckedModeBanner: false,
-      theme: CashWiseTheme.lightTheme,
-      home: const HomeScreen(),
+    return ValueListenableBuilder<ThemeMode>(
+      valueListenable: themeModeNotifier,
+      builder: (context, currentMode, _) {
+        return MaterialApp(
+          title: 'CashWise',
+          debugShowCheckedModeBanner: false,
+          theme: CashWiseTheme.lightTheme,
+          darkTheme: CashWiseTheme.darkTheme,
+          themeMode: currentMode,
+          home: const HomeScreen(),
+        );
+      },
     );
   }
 }

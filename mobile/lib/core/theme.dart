@@ -24,9 +24,126 @@ class CashWiseColors {
   static const Color blue600 = Color(0xFF2563EB);
   static const Color purple600 = Color(0xFF7C3AED);
   static const Color cyan600 = Color(0xFF0891B2);
+
+  // Dark palette tokens
+  static const Color darkBackground = Color(0xFF0F172A);
+  static const Color darkSurface = Color(0xFF1E293B);
+  static const Color darkSurfaceSubtle = Color(0xFF334155);
+  static const Color darkBorder = Color(0xFF334155);
+  static const Color darkText = Color(0xFFF8FAFC);
+  static const Color darkTextMuted = Color(0xFF94A3B8);
+  static const Color darkPrimary = Color(0xFF6366F1);
+  static const Color darkIncome = Color(0xFF34D399);
+  static const Color darkExpense = Color(0xFFFB7185);
 }
 
+final themeModeNotifier = ValueNotifier<ThemeMode>(ThemeMode.light);
+
 class CashWiseTheme {
+  static ThemeData get darkTheme {
+    return ThemeData(
+      useMaterial3: true,
+      brightness: Brightness.dark,
+      scaffoldBackgroundColor: CashWiseColors.darkBackground,
+      colorScheme: const ColorScheme(
+        brightness: Brightness.dark,
+        primary: CashWiseColors.darkPrimary,
+        onPrimary: CashWiseColors.slate900,
+        secondary: CashWiseColors.darkIncome,
+        onSecondary: CashWiseColors.slate900,
+        error: CashWiseColors.darkExpense,
+        onError: CashWiseColors.slate900,
+        surface: CashWiseColors.darkSurface,
+        onSurface: CashWiseColors.darkText,
+      ),
+      appBarTheme: const AppBarTheme(
+        backgroundColor: CashWiseColors.darkSurface,
+        foregroundColor: CashWiseColors.darkText,
+        elevation: 0,
+        scrolledUnderElevation: 0.5,
+        surfaceTintColor: Colors.transparent,
+        titleTextStyle: TextStyle(
+          color: CashWiseColors.darkText,
+          fontSize: 18,
+          fontWeight: FontWeight.w700,
+          letterSpacing: -0.3,
+        ),
+      ),
+      navigationBarTheme: NavigationBarThemeData(
+        backgroundColor: CashWiseColors.darkSurface,
+        surfaceTintColor: Colors.transparent,
+        elevation: 0,
+        indicatorColor: CashWiseColors.darkPrimary.withValues(alpha: 0.2),
+        labelTextStyle: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) {
+            return const TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w700,
+              color: CashWiseColors.darkPrimary,
+            );
+          }
+          return const TextStyle(
+            fontSize: 11,
+            fontWeight: FontWeight.w500,
+            color: CashWiseColors.darkTextMuted,
+          );
+        }),
+        iconTheme: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) {
+            return const IconThemeData(color: CashWiseColors.darkPrimary, size: 22);
+          }
+          return const IconThemeData(color: CashWiseColors.darkTextMuted, size: 22);
+        }),
+      ),
+      cardTheme: CardThemeData(
+        color: CashWiseColors.darkSurface,
+        elevation: 0,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+          side: const BorderSide(color: CashWiseColors.darkBorder),
+        ),
+        margin: EdgeInsets.zero,
+      ),
+      dividerTheme: const DividerThemeData(
+        color: CashWiseColors.darkBorder,
+        thickness: 1,
+        space: 1,
+      ),
+      inputDecorationTheme: InputDecorationTheme(
+        filled: true,
+        fillColor: CashWiseColors.darkSurfaceSubtle,
+        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: const BorderSide(color: CashWiseColors.darkBorder),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: const BorderSide(color: CashWiseColors.darkBorder),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: const BorderSide(color: CashWiseColors.darkPrimary, width: 2),
+        ),
+        labelStyle: const TextStyle(fontSize: 13, color: CashWiseColors.darkTextMuted),
+        hintStyle: const TextStyle(fontSize: 13, color: CashWiseColors.slate500),
+      ),
+      floatingActionButtonTheme: const FloatingActionButtonThemeData(
+        backgroundColor: CashWiseColors.darkPrimary,
+        foregroundColor: CashWiseColors.pureWhite,
+        elevation: 2,
+        shape: StadiumBorder(),
+      ),
+      bottomSheetTheme: const BottomSheetThemeData(
+        backgroundColor: CashWiseColors.darkSurface,
+        surfaceTintColor: Colors.transparent,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+        ),
+      ),
+    );
+  }
+
   static ThemeData get lightTheme {
     return ThemeData(
       useMaterial3: true,
