@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { Plus, Edit2, Trash2, Tag, X } from 'lucide-react';
-import { Category, CategoryType, PRESET_EMOJIS } from '@cashwise/shared';
+import { Category, CategoryType, PRESET_EMOJIS, sanitizeEmoji } from '@cashwise/shared';
 
 interface CategoryManagerProps {
   categories: Category[];
@@ -70,7 +70,7 @@ export function CategoryManager({
     setEditingCategory(cat);
     setName(cat.name);
     setType(cat.type);
-    setIcon(cat.icon || '🏷️');
+    setIcon(sanitizeEmoji(cat.icon));
     setColor(cat.color || '#64748B');
     setError(null);
     setIsModalOpen(true);
@@ -162,13 +162,10 @@ export function CategoryManager({
                 className="w-11 h-11 rounded-xl flex items-center justify-center text-xl shrink-0"
                 style={{ backgroundColor: `${cat.color}15`, border: `1px solid ${cat.color}30` }}
               >
-                {cat.icon || '🏷️'}
+                {sanitizeEmoji(cat.icon)}
               </div>
               <div>
-                <p className="text-sm font-bold text-slate-900">
-                  <span className="mr-1.5 text-base">{cat.icon || '🏷️'}</span>
-                  {cat.name}
-                </p>
+                <p className="text-sm font-bold text-slate-900">{cat.name}</p>
                 <span className="text-[10px] font-semibold uppercase px-2 py-0.5 rounded bg-slate-100 text-slate-600 border border-slate-200">
                   {cat.type}
                 </span>

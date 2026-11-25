@@ -11,6 +11,7 @@ import {
   SyncQueueItem,
   Transaction,
   User,
+  sanitizeEmoji,
 } from '../types';
 import { generateUuid } from '../validators';
 import { ICashWiseStorage, TransactionFilter } from './interface';
@@ -128,10 +129,29 @@ export class CashWiseIndexedDbStorage implements ICashWiseStorage {
       const accounts = await this.getAllFromStore<Account>('accounts');
       for (let i = 0; i < accounts.length; i++) {
         const acc = accounts[i];
+        let needsUpdate = false;
         if (!acc.group || acc.order === undefined) {
           acc.group = acc.group || (acc.type === 'CASH' ? 'Cash' : acc.type === 'INVESTMENT' ? 'Investment' : 'Accounts');
           acc.order = acc.order ?? (i + 1);
+          needsUpdate = true;
+        }
+        const cleanIcon = sanitizeEmoji(acc.icon);
+        if (cleanIcon !== acc.icon) {
+          acc.icon = cleanIcon;
+          needsUpdate = true;
+        }
+        if (needsUpdate) {
           await this.runTx('accounts', 'readwrite', (s) => s.put(acc));
+        }
+      }
+
+      // Ensure existing categories have emoji icons instead of legacy strings (e.g. 'utensils' -> '🍔')
+      const categories = await this.getAllFromStore<Category>('categories');
+      for (const cat of categories) {
+        const cleanIcon = sanitizeEmoji(cat.icon);
+        if (cleanIcon !== cat.icon) {
+          cat.icon = cleanIcon;
+          await this.runTx('categories', 'readwrite', (s) => s.put(cat));
         }
       }
     }
@@ -288,7 +308,12 @@ export class CashWiseIndexedDbStorage implements ICashWiseStorage {
   // --- CATEGORIES ---
   async getCategories(userId: string, includeDeleted = false): Promise<Category[]> {
     const all = await this.getAllFromStore<Category>('categories');
-    return all.filter((c) => c.userId === userId && (includeDeleted || !c.deletedAt));
+    return all
+      .filter((c) => c.userId === userId && (includeDeleted || !c.deletedAt))
+      .map((c) => ({
+        ...c,
+        icon: sanitizeEmoji(c.icon),
+      }));
   }
 
   async getCategoryById(id: string): Promise<Category | null> {

@@ -148,3 +148,34 @@ export const DEFAULT_ACCOUNT_GROUPS = [
   'Savings',
   'Investment',
 ] as const;
+
+export const LEGACY_ICON_TO_EMOJI: Record<string, string> = {
+  utensils: '🍔',
+  car: '🚗',
+  receipt: '🏠',
+  'shopping-cart': '🛒',
+  shopping: '🛒',
+  tv: '📺',
+  'gamepad-2': '🎮',
+  gamepad: '🎮',
+  heart: '🏥',
+  briefcase: '💼',
+  'trending-up': '📈',
+  gift: '🎁',
+  book: '📚',
+  tag: '🏷️',
+  wallet: '💵',
+  'credit-card': '💳',
+  landmark: '🏦',
+  lock: '🔒',
+};
+
+export function sanitizeEmoji(icon?: string | null): string {
+  if (!icon) return '🏷️';
+  const clean = icon.trim();
+  const lower = clean.toLowerCase();
+  if (LEGACY_ICON_TO_EMOJI[lower]) {
+    return LEGACY_ICON_TO_EMOJI[lower];
+  }
+  return clean;
+}
