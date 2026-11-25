@@ -165,7 +165,10 @@ export function CategoryManager({
                 {cat.icon || '🏷️'}
               </div>
               <div>
-                <p className="text-sm font-bold text-slate-900">{cat.name}</p>
+                <p className="text-sm font-bold text-slate-900">
+                  <span className="mr-1.5 text-base">{cat.icon || '🏷️'}</span>
+                  {cat.name}
+                </p>
                 <span className="text-[10px] font-semibold uppercase px-2 py-0.5 rounded bg-slate-100 text-slate-600 border border-slate-200">
                   {cat.type}
                 </span>

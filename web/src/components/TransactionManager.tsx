@@ -584,7 +584,7 @@ export function TransactionManager({
                 </span>
               ) : (
                 <span>
-                  {cat?.name || 'Kategori'} ({acc?.name || 'Akun'})
+                  {cat ? `${cat.icon || '🏷️'} ${cat.name}` : 'Kategori'} ({acc?.name || 'Akun'})
                 </span>
               )}
             </div>

@@ -275,7 +275,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     Text(
                       isTransfer
                           ? '${_accName(tx['accountId'])} → ${_accName(tx['toAccountId'])}'
-                          : '${_catName(catId)} · ${_accName(tx['accountId'])}',
+                          : '${_catIcon(catId)} ${_catName(catId)} · ${_accName(tx['accountId'])}',
                       style: const TextStyle(fontSize: 11, color: CashWiseColors.slate500),
                       maxLines: 1, overflow: TextOverflow.ellipsis,
                     ),
@@ -601,7 +601,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                     const SizedBox(width: 12),
                     Expanded(
-                      child: Text(c['name'] ?? '', style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14)),
+                      child: Text('${c['icon'] ?? '🏷️'} ${c['name'] ?? ''}', style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14)),
                     ),
                     IconButton(
                       icon: const Icon(Icons.delete_outline_rounded, size: 18, color: CashWiseColors.slate400),

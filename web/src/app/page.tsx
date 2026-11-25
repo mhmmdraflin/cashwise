@@ -864,7 +864,7 @@ export default function CashWiseApp() {
                               </div>
                             </td>
                             <td className="px-lg py-md font-body text-body-sm text-light-on-surface-muted dark:text-dark-on-surface-muted">
-                              {cat?.name || (isTransfer ? 'Transfer' : 'Umum')}
+                              {cat ? `${cat.icon || '🏷️'} ${cat.name}` : (isTransfer ? '🔄 Transfer' : '🏷️ Umum')}
                             </td>
                             <td className="px-lg py-md font-body text-body-sm text-light-on-surface-muted dark:text-dark-on-surface-muted">
                               {acc?.name || 'Akun'}
