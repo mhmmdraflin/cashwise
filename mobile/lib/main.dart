@@ -19,15 +19,17 @@ class CashWiseApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ValueListenableBuilder<ThemeMode>(
-      valueListenable: themeModeNotifier,
-      builder: (context, currentMode, _) {
+    return ListenableBuilder(
+      listenable: Listenable.merge([themeModeNotifier, customMobileBgNotifier]),
+      builder: (context, _) {
+        final mode = themeModeNotifier.value;
+        final bg = customMobileBgNotifier.value;
         return MaterialApp(
           title: 'CashWise',
           debugShowCheckedModeBanner: false,
-          theme: CashWiseTheme.lightTheme,
-          darkTheme: CashWiseTheme.darkTheme,
-          themeMode: currentMode,
+          theme: CashWiseTheme.getLightTheme(bg.light),
+          darkTheme: CashWiseTheme.getDarkTheme(bg.dark),
+          themeMode: mode,
           home: const HomeScreen(),
         );
       },

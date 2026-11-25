@@ -19,11 +19,69 @@ import { getStorage, DEFAULT_USER_ID } from '@/lib/db';
 type NavTab = 'overview' | 'transactions' | 'accounts' | 'categories' | 'stats' | 'settings';
 type ThemeMode = 'light' | 'dark' | 'system';
 
+interface CustomBgState {
+  light: { primary: string; card: string; secondary: string };
+  dark: { primary: string; card: string; secondary: string };
+}
+
+const BG_PRESETS: Record<string, { label: string; light: { primary: string; card: string; secondary: string }; dark: { primary: string; card: string; secondary: string } }> = {
+  original: {
+    label: 'Original CashWise',
+    light: { primary: '#F8FAFC', card: '#FFFFFF', secondary: '#EEF2FF' },
+    dark: { primary: '#0F172A', card: '#1E293B', secondary: '#334155' },
+  },
+  midnight: {
+    label: 'Midnight Slate',
+    light: { primary: '#F1F5F9', card: '#FFFFFF', secondary: '#E2E8F0' },
+    dark: { primary: '#0F172A', card: '#1E293B', secondary: '#334155' },
+  },
+  ocean: {
+    label: 'Ocean Blue',
+    light: { primary: '#F0F9FF', card: '#FFFFFF', secondary: '#E0F2FE' },
+    dark: { primary: '#0C192C', card: '#132A4A', secondary: '#1E3A5F' },
+  },
+  forest: {
+    label: 'Forest Green',
+    light: { primary: '#F0FDF4', card: '#FFFFFF', secondary: '#DCFCE7' },
+    dark: { primary: '#0B1F17', card: '#132E22', secondary: '#1E4635' },
+  },
+  warm: {
+    label: 'Warm Neutral',
+    light: { primary: '#FAF8F5', card: '#FFFFFF', secondary: '#F3EFEA' },
+    dark: { primary: '#1C1917', card: '#292524', secondary: '#44403C' },
+  },
+};
+
+function luminance(hex: string): number {
+  const c = hex.replace('#', '');
+  if (c.length !== 6) return 1;
+  const rgb = [0, 2, 4].map((i) => {
+    const v = parseInt(c.substring(i, i + 2), 16) / 255;
+    return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
+  });
+  return 0.2126 * rgb[0] + 0.7152 * rgb[1] + 0.0722 * rgb[2];
+}
+
+function contrastRatio(hex1: string, hex2: string): number {
+  const l1 = luminance(hex1);
+  const l2 = luminance(hex2);
+  return (Math.max(l1, l2) + 0.05) / (Math.min(l1, l2) + 0.05);
+}
+
 export default function CashWiseApp() {
   const [currentTab, setCurrentTab] = useState<NavTab>('overview');
   const [isLoading, setIsLoading] = useState(true);
   const [themeMode, setThemeMode] = useState<ThemeMode>('system');
   const [hideBalance, setHideBalance] = useState(false);
+
+  // Background Customization State
+  const [customBg, setCustomBg] = useState<CustomBgState>({
+    light: { primary: '#F8FAFC', card: '#FFFFFF', secondary: '#EEF2FF' },
+    dark: { primary: '#0F172A', card: '#1E293B', secondary: '#334155' },
+  });
+  const [bgPreset, setBgPreset] = useState<string>('original');
+  const [editingMode, setEditingMode] = useState<'light' | 'dark'>('light');
+  const [appearanceToast, setAppearanceToast] = useState<string | null>(null);
 
   // Core Data States
   const [accounts, setAccounts] = useState<Account[]>([]);
@@ -41,12 +99,78 @@ export default function CashWiseApp() {
   const [modalNote, setModalNote] = useState('');
   const [modalError, setModalError] = useState<string | null>(null);
 
+  function applyBgToDOM(bg: CustomBgState) {
+    if (typeof document === 'undefined') return;
+    const root = document.documentElement;
+    root.style.setProperty('--cw-primary-bg', bg.light.primary);
+    root.style.setProperty('--cw-card-bg', bg.light.card);
+    root.style.setProperty('--cw-secondary-bg', bg.light.secondary);
+    root.style.setProperty('--cw-dark-primary-bg', bg.dark.primary);
+    root.style.setProperty('--cw-dark-card-bg', bg.dark.card);
+    root.style.setProperty('--cw-dark-secondary-bg', bg.dark.secondary);
+  }
+
+  function handleSyncColor(key: 'primary' | 'card' | 'secondary', val: string) {
+    const clean = val.toUpperCase();
+    setCustomBg((prev) => {
+      const next = {
+        ...prev,
+        [editingMode]: {
+          ...prev[editingMode],
+          [key]: clean,
+        },
+      };
+      return next;
+    });
+    setBgPreset('custom');
+  }
+
+  function handleApplyPreset(name: string) {
+    if (!BG_PRESETS[name]) return;
+    setBgPreset(name);
+    setCustomBg((prev) => ({
+      ...prev,
+      [editingMode]: { ...BG_PRESETS[name][editingMode] },
+    }));
+  }
+
+  function handleApplyAppearance() {
+    try {
+      localStorage.setItem('cashwise-custom-bg', JSON.stringify(customBg));
+    } catch {}
+    applyBgToDOM(customBg);
+    setAppearanceToast('Palet background kustom berhasil disimpan dan diterapkan.');
+    setTimeout(() => setAppearanceToast(null), 3000);
+  }
+
+  function handleResetAppearanceDefaults() {
+    const orig = BG_PRESETS.original;
+    const defState = { light: { ...orig.light }, dark: { ...orig.dark } };
+    setCustomBg(defState);
+    setBgPreset('original');
+    applyBgToDOM(defState);
+    try {
+      localStorage.setItem('cashwise-custom-bg', JSON.stringify(defState));
+    } catch {}
+    setAppearanceToast('Warna latar belakang dikembalikan ke default.');
+    setTimeout(() => setAppearanceToast(null), 3000);
+  }
+
   // Theme Initializer & Controller
   useEffect(() => {
     try {
       const saved = (localStorage.getItem('cashwise-theme') as ThemeMode) || 'system';
       setThemeMode(saved);
       applyTheme(saved);
+
+      const savedBg = localStorage.getItem('cashwise-custom-bg');
+      if (savedBg) {
+        const parsed = JSON.parse(savedBg);
+        if (parsed.light && parsed.dark) {
+          setCustomBg(parsed);
+          applyBgToDOM(parsed);
+        }
+      }
     } catch {
       // ignore
     }
@@ -64,8 +188,10 @@ export default function CashWiseApp() {
         window.matchMedia('(prefers-color-scheme: dark)').matches);
     if (isDark) {
       document.documentElement.classList.add('dark');
+      setEditingMode('dark');
     } else {
       document.documentElement.classList.remove('dark');
+      setEditingMode('light');
     }
   }
 
@@ -409,15 +535,23 @@ export default function CashWiseApp() {
               className="w-9 h-9 rounded-DEFAULT bg-light-primary dark:bg-dark-primary text-light-on-primary dark:text-dark-on-primary inline-flex items-center justify-center shrink-0 shadow-sm"
               aria-hidden="true"
             >
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <rect x="2" y="5" width="20" height="14" rx="3"></rect>
-                <path d="M16 12h4"></path>
-                <circle cx="16" cy="12" r="1.5" fill="currentColor"></circle>
+              <svg width="22" height="22" viewBox="0 0 64 64" fill="none">
+                <path
+                  d="M41.5 21.5C38.8 18.8 35.1 17 31 17C22.72 17 16 23.72 16 32C16 40.28 22.72 47 31 47C35.1 47 38.8 45.2 41.5 42.5"
+                  stroke="#FFFFFF"
+                  strokeWidth="6.5"
+                  strokeLinecap="round"
+                />
+                <circle cx="40.5" cy="32" r="5.5" fill="#059669" stroke="#FFFFFF" strokeWidth="2.5" />
               </svg>
             </div>
             <div className="flex flex-col">
-              <span className="font-title text-title-md text-light-on-surface dark:text-dark-on-surface leading-tight font-bold">CashWise</span>
-              <span className="font-label text-label-sm text-light-on-surface-muted dark:text-dark-on-surface-muted">Local-first Vault</span>
+              <span className="font-title text-title-md text-light-on-surface dark:text-dark-on-surface leading-tight font-bold">
+                CashWise
+              </span>
+              <span className="font-label text-label-sm text-light-on-surface-muted dark:text-dark-on-surface-muted">
+                Local-first Vault
+              </span>
             </div>
           </div>
 
@@ -491,8 +625,8 @@ export default function CashWiseApp() {
                   : 'text-light-on-surface-muted dark:text-dark-on-surface-muted hover:bg-light-surface-subtle dark:hover:bg-dark-surface-subtle hover:text-light-on-surface dark:hover:text-dark-on-surface'
               }`}
             >
-              <span className="material-symbols-outlined text-[20px]">settings</span>
-              <span className="font-label text-label-lg">Settings</span>
+              <span className="material-symbols-outlined text-[20px]">palette</span>
+              <span className="font-label text-label-lg">Appearance</span>
             </button>
           </nav>
         </div>
@@ -533,36 +667,57 @@ export default function CashWiseApp() {
               {currentTab === 'accounts' && 'Accounts & Assets'}
               {currentTab === 'categories' && 'Expense & Income Categories'}
               {currentTab === 'stats' && 'Financial Analysis & Statistics'}
-              {currentTab === 'settings' && 'App Settings & Vault Data'}
+              {currentTab === 'settings' && 'Appearance Settings'}
             </h1>
             <p className="font-body text-body-sm text-light-on-surface-muted dark:text-dark-on-surface-muted">
-              {todayFormatted} • Local-first Sync
+              {todayFormatted} • {currentTab === 'settings' ? 'Customize theme & background surfaces' : 'Local-first Sync'}
             </p>
           </div>
 
           <div className="flex items-center gap-sm shrink-0">
-            {/* Quick Export CSV */}
-            <button
-              onClick={() => handleExportData('csv')}
-              title="Ekspor CSV"
-              className="inline-flex items-center gap-xs px-md py-sm rounded-DEFAULT border border-light-border dark:border-dark-border bg-light-surface dark:bg-dark-surface text-light-on-surface dark:text-dark-on-surface text-xs font-semibold hover:bg-light-surface-subtle dark:hover:bg-dark-surface-subtle transition-colors shadow-sm"
-            >
-              <span className="material-symbols-outlined text-[16px]">download</span>
-              <span>CSV</span>
-            </button>
+            {currentTab === 'settings' ? (
+              <div className="flex items-center gap-sm">
+                <button
+                  type="button"
+                  onClick={handleResetAppearanceDefaults}
+                  className="px-md py-sm rounded-DEFAULT border border-light-border dark:border-dark-border bg-light-surface dark:bg-dark-surface-subtle text-light-on-surface dark:text-dark-on-surface font-label text-label-lg hover:opacity-90 whitespace-nowrap shadow-sm font-semibold"
+                >
+                  Reset to Default
+                </button>
+                <button
+                  type="button"
+                  onClick={handleApplyAppearance}
+                  className="px-md py-sm rounded-DEFAULT bg-light-primary dark:bg-dark-primary text-light-on-primary dark:text-dark-on-primary font-label text-label-lg hover:opacity-95 whitespace-nowrap shadow-sm font-semibold"
+                >
+                  Apply Changes
+                </button>
+              </div>
+            ) : (
+              <>
+                {/* Quick Export CSV */}
+                <button
+                  onClick={() => handleExportData('csv')}
+                  title="Ekspor CSV"
+                  className="inline-flex items-center gap-xs px-md py-sm rounded-DEFAULT border border-light-border dark:border-dark-border bg-light-surface dark:bg-dark-surface text-light-on-surface dark:text-dark-on-surface text-xs font-semibold hover:bg-light-surface-subtle dark:hover:bg-dark-surface-subtle transition-colors shadow-sm"
+                >
+                  <span className="material-symbols-outlined text-[16px]">download</span>
+                  <span>CSV</span>
+                </button>
 
-            {/* Quick Add Transaction Button */}
-            <button
-              type="button"
-              onClick={() => {
-                setModalError(null);
-                setIsTxModalOpen(true);
-              }}
-              className="inline-flex items-center justify-center gap-sm px-md py-sm rounded-DEFAULT bg-light-primary dark:bg-dark-primary text-light-on-primary dark:text-dark-on-primary hover:opacity-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-light-primary dark:focus-visible:ring-dark-primary transition-opacity duration-state-change shrink-0 whitespace-nowrap shadow-sm font-semibold"
-            >
-              <span className="material-symbols-outlined text-[18px]">add</span>
-              <span className="font-label text-label-lg">Add Transaction</span>
-            </button>
+                {/* Quick Add Transaction Button */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setModalError(null);
+                    setIsTxModalOpen(true);
+                  }}
+                  className="inline-flex items-center justify-center gap-sm px-md py-sm rounded-DEFAULT bg-light-primary dark:bg-dark-primary text-light-on-primary dark:text-dark-on-primary hover:opacity-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-light-primary dark:focus-visible:ring-dark-primary transition-opacity duration-state-change shrink-0 whitespace-nowrap shadow-sm font-semibold"
+                >
+                  <span className="material-symbols-outlined text-[18px]">add</span>
+                  <span className="font-label text-label-lg">Add Transaction</span>
+                </button>
+              </>
+            )}
           </div>
         </header>
 
@@ -946,76 +1101,376 @@ export default function CashWiseApp() {
             </div>
           )}
 
-          {/* ─── TAB 6: SETTINGS ─── */}
+          {/* ─── TAB 6: APPEARANCE SETTINGS ─── */}
           {currentTab === 'settings' && (
-            <div className="bg-light-surface dark:bg-dark-surface border border-light-border dark:border-dark-border rounded-md p-lg shadow-sm flex flex-col gap-lg max-w-3xl">
-              <div>
-                <h2 className="font-headline text-headline-md text-light-on-surface dark:text-dark-on-surface font-semibold">
-                  Settings & Data Vault
-                </h2>
-                <p className="font-body text-body-sm text-light-on-surface-muted dark:text-dark-on-surface-muted">
-                  Kelola preferensi antarmuka dan cadangan data lokal perangkat Anda.
-                </p>
-              </div>
-
-              {/* Theme Settings */}
-              <div className="p-md rounded-md border border-light-border dark:border-dark-border bg-light-background dark:bg-dark-background flex items-center justify-between">
-                <div>
-                  <h3 className="font-label text-label-lg font-semibold text-light-on-surface dark:text-dark-on-surface">
-                    Mode Tampilan (Theme)
-                  </h3>
-                  <p className="font-body text-body-sm text-light-on-surface-muted dark:text-dark-on-surface-muted">
-                    Pilih antara mode terang, gelap, atau mengikuti tema sistem OS Anda.
-                  </p>
-                </div>
-                <div className="inline-flex rounded-DEFAULT p-xs bg-light-surface-subtle dark:bg-dark-surface-subtle border border-light-border dark:border-dark-border">
-                  {(['light', 'dark', 'system'] as ThemeMode[]).map((m) => (
+            <div className="grid grid-cols-12 gap-lg items-start w-full">
+              {/* Left Column: Theme Mode + Presets + 3 Color Cards */}
+              <div className="col-span-12 lg:col-span-7 flex flex-col gap-lg">
+                {/* Theme Mode Selector */}
+                <section className="bg-light-surface dark:bg-dark-surface border border-light-border dark:border-dark-border rounded-md p-lg flex flex-col gap-md shadow-sm">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h2 className="font-title text-title-md text-light-on-surface dark:text-dark-on-surface font-bold">
+                        Theme Mode
+                      </h2>
+                      <p className="font-body text-body-sm text-light-on-surface-muted dark:text-dark-on-surface-muted">
+                        Pilih mode tampilan aktif aplikasi
+                      </p>
+                    </div>
+                    <span className="px-sm py-xs rounded-DEFAULT bg-light-primary-tint dark:bg-dark-primary-tint text-light-on-primary-tint dark:text-dark-on-primary-tint font-label text-label-sm font-semibold">
+                      {editingMode === 'dark' ? 'Editing Dark Mode' : 'Editing Light Mode'}
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-3 gap-sm" role="radiogroup" aria-label="Theme mode">
                     <button
-                      key={m}
+                      type="button"
                       onClick={() => {
-                        setThemeMode(m);
-                        applyTheme(m);
+                        setThemeMode('light');
+                        applyTheme('light');
                       }}
-                      className={`px-md py-xs rounded-sm capitalize font-label text-label-sm ${
-                        themeMode === m
-                          ? 'bg-light-surface dark:bg-dark-surface text-light-primary dark:text-dark-primary font-bold shadow-sm'
-                          : 'text-light-on-surface-muted dark:text-dark-on-surface-muted hover:text-light-on-surface'
+                      className={`p-sm rounded-DEFAULT flex items-center justify-center gap-xs font-label text-label-lg transition-all ${
+                        themeMode === 'light'
+                          ? 'border-2 border-light-primary dark:border-dark-primary bg-light-primary-tint dark:bg-dark-primary-tint text-light-on-surface dark:text-dark-on-surface font-bold'
+                          : 'border border-light-border dark:border-dark-border bg-light-background dark:bg-dark-background text-light-on-surface-muted dark:text-dark-on-surface-muted hover:text-light-on-surface'
                       }`}
                     >
-                      {m}
+                      <span className="material-symbols-outlined text-[18px]">light_mode</span>
+                      <span>Light</span>
                     </button>
-                  ))}
-                </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setThemeMode('dark');
+                        applyTheme('dark');
+                      }}
+                      className={`p-sm rounded-DEFAULT flex items-center justify-center gap-xs font-label text-label-lg transition-all ${
+                        themeMode === 'dark'
+                          ? 'border-2 border-light-primary dark:border-dark-primary bg-light-primary-tint dark:bg-dark-primary-tint text-light-on-surface dark:text-dark-on-surface font-bold'
+                          : 'border border-light-border dark:border-dark-border bg-light-background dark:bg-dark-background text-light-on-surface-muted dark:text-dark-on-surface-muted hover:text-light-on-surface'
+                      }`}
+                    >
+                      <span className="material-symbols-outlined text-[18px]">dark_mode</span>
+                      <span>Dark</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setThemeMode('system');
+                        applyTheme('system');
+                      }}
+                      className={`p-sm rounded-DEFAULT flex items-center justify-center gap-xs font-label text-label-lg transition-all ${
+                        themeMode === 'system'
+                          ? 'border-2 border-light-primary dark:border-dark-primary bg-light-primary-tint dark:bg-dark-primary-tint text-light-on-surface dark:text-dark-on-surface font-bold'
+                          : 'border border-light-border dark:border-dark-border bg-light-background dark:bg-dark-background text-light-on-surface-muted dark:text-dark-on-surface-muted hover:text-light-on-surface'
+                      }`}
+                    >
+                      <span className="material-symbols-outlined text-[18px]">contrast</span>
+                      <span>System</span>
+                    </button>
+                  </div>
+                </section>
+
+                {/* Preset Color Combinations */}
+                <section className="bg-light-surface dark:bg-dark-surface border border-light-border dark:border-dark-border rounded-md p-lg flex flex-col gap-md shadow-sm">
+                  <div className="flex items-center justify-between gap-sm">
+                    <div>
+                      <h2 className="font-title text-title-md text-light-on-surface dark:text-dark-on-surface font-bold">
+                        Background Presets
+                      </h2>
+                      <p className="font-body text-body-sm text-light-on-surface-muted dark:text-dark-on-surface-muted">
+                        Pilih palet terkurasi atau sesuaikan kode warna hex Anda sendiri.
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={handleApplyAppearance}
+                      className="px-sm py-xs rounded-DEFAULT border border-light-border dark:border-dark-border bg-light-surface-subtle dark:bg-dark-surface-subtle text-light-on-surface dark:text-dark-on-surface font-label text-label-sm whitespace-nowrap hover:opacity-90 font-semibold"
+                    >
+                      + Save Preset
+                    </button>
+                  </div>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-sm">
+                    {Object.entries(BG_PRESETS).map(([key, p]) => {
+                      const sel = bgPreset === key;
+                      const colors = p[editingMode];
+                      return (
+                        <button
+                          key={key}
+                          type="button"
+                          onClick={() => handleApplyPreset(key)}
+                          className={`p-sm rounded-DEFAULT text-left flex flex-col gap-xs transition-all ${
+                            sel
+                              ? 'border-2 border-light-primary dark:border-dark-primary bg-light-primary-tint dark:bg-dark-primary-tint'
+                              : 'border border-light-border dark:border-dark-border bg-light-background dark:bg-dark-background hover:border-slate-300'
+                          }`}
+                        >
+                          <div className="flex items-center gap-xs">
+                            <span className="w-4 h-4 rounded-full border border-light-border shadow-xs" style={{ background: colors.primary }}></span>
+                            <span className="w-4 h-4 rounded-full border border-light-border shadow-xs" style={{ background: colors.card }}></span>
+                            <span className="w-4 h-4 rounded-full border border-light-border shadow-xs" style={{ background: colors.secondary }}></span>
+                          </div>
+                          <span className="font-label text-label-sm text-light-on-surface dark:text-dark-on-surface font-semibold">
+                            {p.label}
+                          </span>
+                        </button>
+                      );
+                    })}
+                    <button
+                      type="button"
+                      onClick={() => setBgPreset('custom')}
+                      className={`p-sm rounded-DEFAULT text-left flex flex-col gap-xs transition-all ${
+                        bgPreset === 'custom'
+                          ? 'border-2 border-light-primary dark:border-dark-primary bg-light-primary-tint dark:bg-dark-primary-tint'
+                          : 'border border-light-border dark:border-dark-border bg-light-background dark:bg-dark-background hover:border-slate-300'
+                      }`}
+                    >
+                      <div className="flex items-center gap-xs">
+                        <span className="material-symbols-outlined text-[16px] text-light-primary dark:text-dark-primary">tune</span>
+                      </div>
+                      <span className="font-label text-label-sm text-light-on-surface dark:text-dark-on-surface font-semibold">
+                        Custom
+                      </span>
+                    </button>
+                  </div>
+                </section>
+
+                {/* Three Independent Background Color Cards */}
+                <section className="grid grid-cols-1 gap-md">
+                  {/* 1. Primary Background */}
+                  <article className="bg-light-surface dark:bg-dark-surface border border-light-border dark:border-dark-border rounded-md p-md flex flex-wrap items-center justify-between gap-md shadow-sm">
+                    <div className="flex flex-col gap-xs">
+                      <span className="font-title text-title-md text-light-on-surface dark:text-dark-on-surface font-bold">
+                        1. Primary Background
+                      </span>
+                      <span className="font-body text-body-sm text-light-on-surface-muted dark:text-dark-on-surface-muted">
+                        Main application scaffold & page canvas
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-sm">
+                      <input
+                        type="color"
+                        value={customBg[editingMode].primary}
+                        onChange={(e) => handleSyncColor('primary', e.target.value)}
+                        aria-label="Primary background color picker"
+                        className="w-10 h-10 rounded-DEFAULT border border-light-border dark:border-dark-border cursor-pointer p-0.5 bg-transparent"
+                      />
+                      <input
+                        type="text"
+                        value={customBg[editingMode].primary}
+                        onChange={(e) => handleSyncColor('primary', e.target.value)}
+                        aria-label="Primary background HEX code"
+                        className="w-28 rounded-DEFAULT border border-light-border dark:border-dark-border bg-light-background dark:bg-dark-background px-sm py-xs font-mono text-mono-sm text-light-on-surface dark:text-dark-on-surface uppercase font-bold"
+                      />
+                    </div>
+                  </article>
+
+                  {/* 2. Card Background */}
+                  <article className="bg-light-surface dark:bg-dark-surface border border-light-border dark:border-dark-border rounded-md p-md flex flex-wrap items-center justify-between gap-md shadow-sm">
+                    <div className="flex flex-col gap-xs">
+                      <span className="font-title text-title-md text-light-on-surface dark:text-dark-on-surface font-bold">
+                        2. Card Background
+                      </span>
+                      <span className="font-body text-body-sm text-light-on-surface-muted dark:text-dark-on-surface-muted">
+                        Cards, panels & financial summary containers
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-sm">
+                      <input
+                        type="color"
+                        value={customBg[editingMode].card}
+                        onChange={(e) => handleSyncColor('card', e.target.value)}
+                        aria-label="Card background color picker"
+                        className="w-10 h-10 rounded-DEFAULT border border-light-border dark:border-dark-border cursor-pointer p-0.5 bg-transparent"
+                      />
+                      <input
+                        type="text"
+                        value={customBg[editingMode].card}
+                        onChange={(e) => handleSyncColor('card', e.target.value)}
+                        aria-label="Card background HEX code"
+                        className="w-28 rounded-DEFAULT border border-light-border dark:border-dark-border bg-light-background dark:bg-dark-background px-sm py-xs font-mono text-mono-sm text-light-on-surface dark:text-dark-on-surface uppercase font-bold"
+                      />
+                    </div>
+                  </article>
+
+                  {/* 3. Secondary Surface */}
+                  <article className="bg-light-surface dark:bg-dark-surface border border-light-border dark:border-dark-border rounded-md p-md flex flex-wrap items-center justify-between gap-md shadow-sm">
+                    <div className="flex flex-col gap-xs">
+                      <span className="font-title text-title-md text-light-on-surface dark:text-dark-on-surface font-bold">
+                        3. Secondary Surface
+                      </span>
+                      <span className="font-body text-body-sm text-light-on-surface-muted dark:text-dark-on-surface-muted">
+                        Nested containers, highlighted rows & active states
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-sm">
+                      <input
+                        type="color"
+                        value={customBg[editingMode].secondary}
+                        onChange={(e) => handleSyncColor('secondary', e.target.value)}
+                        aria-label="Secondary surface color picker"
+                        className="w-10 h-10 rounded-DEFAULT border border-light-border dark:border-dark-border cursor-pointer p-0.5 bg-transparent"
+                      />
+                      <input
+                        type="text"
+                        value={customBg[editingMode].secondary}
+                        onChange={(e) => handleSyncColor('secondary', e.target.value)}
+                        aria-label="Secondary surface HEX code"
+                        className="w-28 rounded-DEFAULT border border-light-border dark:border-dark-border bg-light-background dark:bg-dark-background px-sm py-xs font-mono text-mono-sm text-light-on-surface dark:text-dark-on-surface uppercase font-bold"
+                      />
+                    </div>
+                  </article>
+                </section>
+
+                {/* Data Backup & Export Section */}
+                <section className="bg-light-surface dark:bg-dark-surface border border-light-border dark:border-dark-border rounded-md p-lg flex flex-col gap-md shadow-sm">
+                  <div>
+                    <h3 className="font-title text-title-md font-bold text-light-on-surface dark:text-dark-on-surface">
+                      Cadangan Data (Backup & Export)
+                    </h3>
+                    <p className="font-body text-body-sm text-light-on-surface-muted dark:text-dark-on-surface-muted">
+                      Semua catatan tersimpan di browser IndexedDB lokal perangkat Anda.
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-sm">
+                    <button
+                      onClick={() => handleExportData('csv')}
+                      className="inline-flex items-center gap-sm px-md py-sm rounded-DEFAULT border border-light-border dark:border-dark-border bg-light-surface dark:bg-dark-surface text-light-on-surface dark:text-dark-on-surface font-label text-label-lg hover:bg-light-surface-subtle dark:hover:bg-dark-surface-subtle font-semibold shadow-xs"
+                    >
+                      <span className="material-symbols-outlined text-[18px]">table_view</span>
+                      <span>Ekspor CSV</span>
+                    </button>
+                    <button
+                      onClick={() => handleExportData('json')}
+                      className="inline-flex items-center gap-sm px-md py-sm rounded-DEFAULT border border-light-border dark:border-dark-border bg-light-surface dark:bg-dark-surface text-light-on-surface dark:text-dark-on-surface font-label text-label-lg hover:bg-light-surface-subtle dark:hover:bg-dark-surface-subtle font-semibold shadow-xs"
+                    >
+                      <span className="material-symbols-outlined text-[18px]">data_object</span>
+                      <span>Ekspor JSON (Full Backup)</span>
+                    </button>
+                  </div>
+                </section>
               </div>
 
-              {/* Data Backup & Export */}
-              <div className="p-md rounded-md border border-light-border dark:border-dark-border bg-light-background dark:bg-dark-background flex flex-col gap-md">
-                <div>
-                  <h3 className="font-label text-label-lg font-semibold text-light-on-surface dark:text-dark-on-surface">
-                    Cadangan Data (Backup & Export)
-                  </h3>
-                  <p className="font-body text-body-sm text-light-on-surface-muted dark:text-dark-on-surface-muted">
-                    Semua catatan transaksi Anda sepenuhnya berada di IndexedDB browser lokal. Anda dapat mengunduh salinan berkala.
-                  </p>
-                </div>
+              {/* Right Column: Live Application Preview */}
+              <aside className="col-span-12 lg:col-span-5 sticky top-24 bg-light-surface dark:bg-dark-surface border border-light-border dark:border-dark-border rounded-md p-lg flex flex-col gap-md shadow-sm">
+                {(() => {
+                  const cfg = customBg[editingMode];
+                  const cardIsDark = luminance(cfg.card) < 0.25;
+                  const secIsDark = luminance(cfg.secondary) < 0.25;
+                  const cardText = cardIsDark ? '#F8FAFC' : '#0F172A';
+                  const cardMuted = cardIsDark ? '#94A3B8' : '#64748B';
+                  const secText = secIsDark ? '#F8FAFC' : '#0F172A';
+                  const ratio = contrastRatio(cardText, cfg.card);
+                  const isPass = ratio >= 4.5;
 
-                <div className="flex items-center gap-sm">
-                  <button
-                    onClick={() => handleExportData('csv')}
-                    className="inline-flex items-center gap-sm px-md py-sm rounded-DEFAULT border border-light-border dark:border-dark-border bg-light-surface dark:bg-dark-surface text-light-on-surface dark:text-dark-on-surface font-label text-label-lg hover:bg-light-surface-subtle dark:hover:bg-dark-surface-subtle"
-                  >
-                    <span className="material-symbols-outlined text-[18px]">table_view</span>
-                    <span>Ekspor CSV</span>
-                  </button>
-                  <button
-                    onClick={() => handleExportData('json')}
-                    className="inline-flex items-center gap-sm px-md py-sm rounded-DEFAULT border border-light-border dark:border-dark-border bg-light-surface dark:bg-dark-surface text-light-on-surface dark:text-dark-on-surface font-label text-label-lg hover:bg-light-surface-subtle dark:hover:bg-dark-surface-subtle"
-                  >
-                    <span className="material-symbols-outlined text-[18px]">data_object</span>
-                    <span>Ekspor JSON (Full Backup)</span>
-                  </button>
-                </div>
-              </div>
+                  return (
+                    <>
+                      <header className="flex items-center justify-between gap-sm">
+                        <div>
+                          <h2 className="font-title text-title-md text-light-on-surface dark:text-dark-on-surface font-bold">
+                            Live Application Preview
+                          </h2>
+                          <p className="font-body text-body-sm text-light-on-surface-muted dark:text-dark-on-surface-muted">
+                            Updates in real time as you customize
+                          </p>
+                        </div>
+                        <span
+                          className={`px-sm py-xs rounded-DEFAULT font-label text-label-sm tabular-nums font-semibold shadow-xs ${
+                            isPass
+                              ? 'bg-light-income-bg text-light-income-text dark:bg-dark-income-bg dark:text-dark-income-text'
+                              : 'bg-light-expense-bg text-light-expense-text'
+                          }`}
+                        >
+                          {isPass ? `WCAG AA ${ratio.toFixed(1)}:1` : `Low Contrast ${ratio.toFixed(1)}:1`}
+                        </span>
+                      </header>
+
+                      {/* Live App Canvas Frame */}
+                      <div
+                        className="rounded-md border border-light-border dark:border-dark-border p-md flex flex-col gap-md transition-colors duration-state-change shadow-inner"
+                        style={{ backgroundColor: cfg.primary }}
+                      >
+                        {/* Mini Header & Secondary Surface */}
+                        <div
+                          className="rounded-DEFAULT p-sm flex items-center justify-between transition-colors duration-state-change shadow-xs"
+                          style={{ backgroundColor: cfg.secondary }}
+                        >
+                          <div className="flex items-center gap-xs">
+                            <span className="w-6 h-6 rounded-sm bg-light-primary dark:bg-dark-primary text-white inline-flex items-center justify-center font-label text-label-sm font-bold shadow-xs">
+                              C
+                            </span>
+                            <span className="font-label text-label-lg font-bold" style={{ color: secText }}>
+                              Overview
+                            </span>
+                          </div>
+                          <span className="px-sm py-xs rounded-sm bg-light-primary dark:bg-dark-primary text-white font-label text-label-sm font-semibold shadow-xs">
+                            + Add
+                          </span>
+                        </div>
+
+                        {/* Mini Card Surface */}
+                        <div
+                          className="rounded-md border border-light-border dark:border-dark-border p-md flex flex-col gap-sm transition-colors duration-state-change shadow-sm"
+                          style={{ backgroundColor: cfg.card }}
+                        >
+                          <span className="font-label text-label-sm" style={{ color: cardMuted }}>
+                            Total Net Worth
+                          </span>
+                          <p className="font-headline text-headline-md tabular-nums font-bold" style={{ color: cardText }}>
+                            Rp 148.750.000
+                          </p>
+                          <div className="grid grid-cols-2 gap-sm pt-xs border-t border-light-border dark:border-dark-border">
+                            <div>
+                              <span className="font-label text-label-sm block" style={{ color: cardMuted }}>
+                                Income
+                              </span>
+                              <span className="font-label text-label-lg text-light-income-text dark:text-dark-income-text font-bold tabular-nums">
+                                + Rp 18.5M
+                              </span>
+                            </div>
+                            <div>
+                              <span className="font-label text-label-sm block" style={{ color: cardMuted }}>
+                                Expense
+                              </span>
+                              <span className="font-label text-label-lg text-light-expense-text dark:text-dark-expense-text font-bold tabular-nums">
+                                - Rp 7.84M
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Mini Transaction Row */}
+                        <div
+                          className="rounded-md border border-light-border dark:border-dark-border p-sm flex items-center justify-between transition-colors duration-state-change shadow-xs"
+                          style={{ backgroundColor: cfg.card }}
+                        >
+                          <div className="flex items-center gap-sm">
+                            <span className="w-8 h-8 rounded-DEFAULT bg-light-expense-bg dark:bg-dark-expense-bg inline-flex items-center justify-center text-base">
+                              🍜
+                            </span>
+                            <div>
+                              <p className="font-label text-label-sm font-bold" style={{ color: cardText }}>
+                                Lunch at Bakmi GM
+                              </p>
+                              <p className="font-body text-body-sm" style={{ color: cardMuted }}>
+                                GoPay / QRIS
+                              </p>
+                            </div>
+                          </div>
+                          <span className="font-label text-label-sm text-light-expense-text dark:text-dark-expense-text font-bold tabular-nums">
+                            - Rp 68.000
+                          </span>
+                        </div>
+                      </div>
+
+                      {appearanceToast && (
+                        <p className="font-label text-label-sm text-light-income-text dark:text-dark-income-text font-semibold animate-in fade-in">
+                          {appearanceToast}
+                        </p>
+                      )}
+                    </>
+                  );
+                })()}
+              </aside>
             </div>
           )}
         </main>

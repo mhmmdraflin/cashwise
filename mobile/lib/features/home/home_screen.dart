@@ -77,7 +77,9 @@ class _HomeScreenState extends State<HomeScreen> {
                 color: CashWiseColors.indigo600,
                 borderRadius: BorderRadius.circular(8),
               ),
-              child: const Icon(Icons.account_balance_wallet_rounded, color: Colors.white, size: 18),
+              child: const Center(
+                child: CashWiseLogoMark(size: 20),
+              ),
             ),
             const SizedBox(width: 10),
             Column(
@@ -97,6 +99,11 @@ class _HomeScreenState extends State<HomeScreen> {
           ],
         ),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.palette_outlined, size: 20),
+            tooltip: 'Penyesuaian Background',
+            onPressed: () => _showAppearanceSheet(context),
+          ),
           TextButton.icon(
             onPressed: () => _showCategoriesSheet(context),
             icon: const Text('🏷️', style: TextStyle(fontSize: 14)),
@@ -1037,6 +1044,386 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  void _showAppearanceSheet(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      builder: (ctx) {
+        var currentPreset = customMobileBgNotifier.value;
+        final isDark = Theme.of(context).brightness == Brightness.dark;
+        var activeColors = isDark ? currentPreset.dark : currentPreset.light;
+
+        return StatefulBuilder(
+          builder: (ctx, setSheetState) {
+            final pBg = activeColors.primary;
+            final cBg = activeColors.card;
+            final sBg = activeColors.secondary;
+
+            return DraggableScrollableSheet(
+              initialChildSize: 0.9,
+              maxChildSize: 0.95,
+              minChildSize: 0.5,
+              expand: false,
+              builder: (_, scrollController) {
+                return Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: ListView(
+                    controller: scrollController,
+                    children: [
+                      const SizedBox(height: 12),
+                      Center(
+                        child: Container(
+                          width: 40,
+                          height: 4,
+                          decoration: BoxDecoration(
+                            color: CashWiseColors.slate300,
+                            borderRadius: BorderRadius.circular(2),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      // Contextual Header
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Row(
+                            children: [
+                              IconButton(
+                                icon: const Icon(Icons.arrow_back_rounded, size: 20),
+                                onPressed: () => Navigator.pop(ctx),
+                              ),
+                              const SizedBox(width: 4),
+                              const Text('Appearance', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
+                            ],
+                          ),
+                          TextButton(
+                            onPressed: () {
+                              setSheetState(() {
+                                currentPreset = mobileBgPresets[0];
+                                activeColors = isDark ? currentPreset.dark : currentPreset.light;
+                              });
+                            },
+                            child: const Text('Reset', style: TextStyle(fontWeight: FontWeight.w700, color: CashWiseColors.slate500)),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 14),
+
+                      // Live Mobile Preview
+                      Container(
+                        padding: const EdgeInsets.all(14),
+                        decoration: BoxDecoration(
+                          color: Theme.of(context).cardTheme.color,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: CashWiseColors.slate200),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                const Text('Live Preview', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: CashWiseColors.slate500)),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                  decoration: BoxDecoration(
+                                    color: CashWiseColors.emerald50,
+                                    borderRadius: BorderRadius.circular(6),
+                                  ),
+                                  child: const Text('WCAG AA Pass', style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: CashWiseColors.emerald600)),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 10),
+                            // Mini Canvas
+                            Container(
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: pBg,
+                                borderRadius: BorderRadius.circular(10),
+                                border: Border.all(color: CashWiseColors.slate200),
+                              ),
+                              child: Column(
+                                children: [
+                                  // Secondary surface bar
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                    decoration: BoxDecoration(
+                                      color: sBg,
+                                      borderRadius: BorderRadius.circular(6),
+                                    ),
+                                    child: Row(
+                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Row(
+                                          children: [
+                                            Container(
+                                              width: 18,
+                                              height: 18,
+                                              decoration: BoxDecoration(
+                                                color: CashWiseColors.indigo600,
+                                                borderRadius: BorderRadius.circular(4),
+                                              ),
+                                              child: const Center(
+                                                child: Text('C', style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold)),
+                                              ),
+                                            ),
+                                            const SizedBox(width: 6),
+                                            const Text('CashWise', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700)),
+                                          ],
+                                        ),
+                                        const Text('+ Add', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: CashWiseColors.indigo600)),
+                                      ],
+                                    ),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  // Card surface
+                                  Container(
+                                    padding: const EdgeInsets.all(10),
+                                    decoration: BoxDecoration(
+                                      color: cBg,
+                                      borderRadius: BorderRadius.circular(8),
+                                      border: Border.all(color: CashWiseColors.slate200),
+                                    ),
+                                    child: Row(
+                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            const Text('Net Worth', style: TextStyle(fontSize: 10, color: CashWiseColors.slate500)),
+                                            Text(
+                                              formatRupiah(_totalBalance),
+                                              style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w800, fontFamily: 'monospace'),
+                                            ),
+                                          ],
+                                        ),
+                                        const Text('+7.7%', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: CashWiseColors.emerald600)),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+
+                      // Presets Horizontal Scroll
+                      const Text('Presets', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: CashWiseColors.slate600)),
+                      const SizedBox(height: 8),
+                      SizedBox(
+                        height: 36,
+                        child: ListView.separated(
+                          scrollDirection: Axis.horizontal,
+                          itemCount: mobileBgPresets.length,
+                          separatorBuilder: (_, __) => const SizedBox(width: 8),
+                          itemBuilder: (_, i) {
+                            final p = mobileBgPresets[i];
+                            final sel = currentPreset.key == p.key;
+                            return GestureDetector(
+                              onTap: () {
+                                setSheetState(() {
+                                  currentPreset = p;
+                                  activeColors = isDark ? p.dark : p.light;
+                                });
+                              },
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                                decoration: BoxDecoration(
+                                  color: sel ? CashWiseColors.indigo600 : Theme.of(context).cardTheme.color,
+                                  borderRadius: BorderRadius.circular(20),
+                                  border: Border.all(color: sel ? CashWiseColors.indigo600 : CashWiseColors.slate200),
+                                ),
+                                child: Text(
+                                  p.label,
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: sel ? FontWeight.w700 : FontWeight.w500,
+                                    color: sel ? Colors.white : CashWiseColors.slate700,
+                                  ),
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+
+                      // Three Vertical Color Controls
+                      _mobileColorCard(
+                        'Primary Background',
+                        'Main page scaffold',
+                        activeColors.hexPrimary,
+                        activeColors.primary,
+                        () => _pickMobileColor(ctx, 'Primary Background', activeColors.primary, (newC) {
+                          setSheetState(() {
+                            activeColors = MobileBgColors(primary: newC, card: activeColors.card, secondary: activeColors.secondary);
+                          });
+                        }),
+                      ),
+                      const SizedBox(height: 10),
+                      _mobileColorCard(
+                        'Card Background',
+                        'Summary cards & panels',
+                        activeColors.hexCard,
+                        activeColors.card,
+                        () => _pickMobileColor(ctx, 'Card Background', activeColors.card, (newC) {
+                          setSheetState(() {
+                            activeColors = MobileBgColors(primary: activeColors.primary, card: newC, secondary: activeColors.secondary);
+                          });
+                        }),
+                      ),
+                      const SizedBox(height: 10),
+                      _mobileColorCard(
+                        'Secondary Surface',
+                        'Nested & highlighted areas',
+                        activeColors.hexSecondary,
+                        activeColors.secondary,
+                        () => _pickMobileColor(ctx, 'Secondary Surface', activeColors.secondary, (newC) {
+                          setSheetState(() {
+                            activeColors = MobileBgColors(primary: activeColors.primary, card: activeColors.card, secondary: newC);
+                          });
+                        }),
+                      ),
+                      const SizedBox(height: 24),
+
+                      // Apply CTA
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          onPressed: () {
+                            final updatedPreset = MobileBgPreset(
+                              key: currentPreset.key,
+                              label: currentPreset.label,
+                              light: isDark ? currentPreset.light : activeColors,
+                              dark: isDark ? activeColors : currentPreset.dark,
+                            );
+                            customMobileBgNotifier.value = updatedPreset;
+                            Navigator.pop(ctx);
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('Tema background berhasil diterapkan')),
+                            );
+                          },
+                          child: const Text('Apply Changes', style: TextStyle(fontWeight: FontWeight.w700)),
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+                    ],
+                  ),
+                );
+              },
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Widget _mobileColorCard(String title, String desc, String hex, Color color, VoidCallback onTap) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: Theme.of(context).cardTheme.color,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: CashWiseColors.slate200),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(title, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13)),
+                const SizedBox(height: 2),
+                Text(desc, style: const TextStyle(fontSize: 11, color: CashWiseColors.slate500)),
+              ],
+            ),
+            Row(
+              children: [
+                Text(hex, style: const TextStyle(fontSize: 12, fontFamily: 'monospace', fontWeight: FontWeight.bold, color: CashWiseColors.slate600)),
+                const SizedBox(width: 8),
+                Container(
+                  width: 26,
+                  height: 26,
+                  decoration: BoxDecoration(
+                    color: color,
+                    shape: BoxShape.circle,
+                    border: Border.all(color: CashWiseColors.slate300),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _pickMobileColor(BuildContext ctx, String label, Color initial, Function(Color) onSelect) {
+    final curated = [
+      const Color(0xFFF8FAFC),
+      const Color(0xFFFFFFFF),
+      const Color(0xFFEEF2FF),
+      const Color(0xFFF0F9FF),
+      const Color(0xFFE0F2FE),
+      const Color(0xFFF0FDF4),
+      const Color(0xFFDCFCE7),
+      const Color(0xFFFAF8F5),
+      const Color(0xFFF3EFEA),
+      const Color(0xFF0F172A),
+      const Color(0xFF1E293B),
+      const Color(0xFF334155),
+      const Color(0xFF0C192C),
+      const Color(0xFF132A4A),
+      const Color(0xFF0B1F17),
+      const Color(0xFF1C1917),
+    ];
+
+    showModalBottomSheet(
+      context: ctx,
+      builder: (pickerCtx) {
+        return Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Pilih Warna — $label', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800)),
+              const SizedBox(height: 12),
+              Wrap(
+                spacing: 10,
+                runSpacing: 10,
+                children: curated.map((c) {
+                  return GestureDetector(
+                    onTap: () {
+                      onSelect(c);
+                      Navigator.pop(pickerCtx);
+                    },
+                    child: Container(
+                      width: 44,
+                      height: 44,
+                      decoration: BoxDecoration(
+                        color: c,
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: CashWiseColors.slate300, width: 1.5),
+                      ),
+                    ),
+                  );
+                }).toList(),
+              ),
+              const SizedBox(height: 16),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   // ─── STATS TAB ───
   Widget _buildStatsTab() {
     final ranges = ['1H', '1M', '1B', '3B', '1T'];
@@ -1587,4 +1974,55 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
     );
   }
+}
+
+class CashWiseLogoMark extends StatelessWidget {
+  final double size;
+  const CashWiseLogoMark({super.key, this.size = 24});
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: size,
+      height: size,
+      child: CustomPaint(
+        painter: _CashWiseLogoPainter(),
+      ),
+    );
+  }
+}
+
+class _CashWiseLogoPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final scale = size.width / 64.0;
+    final strokePaint = Paint()
+      ..color = Colors.white
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 6.5 * scale
+      ..strokeCap = StrokeCap.round;
+
+    final dotPaint = Paint()
+      ..color = const Color(0xFF059669)
+      ..style = PaintingStyle.fill;
+
+    final dotBorderPaint = Paint()
+      ..color = Colors.white
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2.0 * scale;
+
+    final path = Path();
+    path.moveTo(41.5 * scale, 21.5 * scale);
+    path.cubicTo(38.8 * scale, 18.8 * scale, 35.1 * scale, 17.0 * scale, 31.0 * scale, 17.0 * scale);
+    path.cubicTo(22.72 * scale, 17.0 * scale, 16.0 * scale, 23.72 * scale, 16.0 * scale, 32.0 * scale);
+    path.cubicTo(16.0 * scale, 40.28 * scale, 22.72 * scale, 47.0 * scale, 31.0 * scale, 47.0 * scale);
+    path.cubicTo(35.1 * scale, 47.0 * scale, 38.8 * scale, 45.2 * scale, 41.5 * scale, 42.5 * scale);
+
+    canvas.drawPath(path, strokePaint);
+    canvas.drawCircle(Offset(40.5 * scale, 32.0 * scale), 5.5 * scale, dotPaint);
+    canvas.drawCircle(Offset(40.5 * scale, 32.0 * scale), 5.5 * scale, dotBorderPaint);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

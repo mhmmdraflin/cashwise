@@ -33,6 +33,21 @@ export default function RootLayout({
                   var dark = t === "dark" || (t === "system" && window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches);
                   if (dark) document.documentElement.classList.add("dark");
                   else document.documentElement.classList.remove("dark");
+
+                  var bgStr = localStorage.getItem("cashwise-custom-bg");
+                  if (bgStr) {
+                    var bg = JSON.parse(bgStr);
+                    if (bg.light) {
+                      if (bg.light.primary) document.documentElement.style.setProperty("--cw-primary-bg", bg.light.primary);
+                      if (bg.light.card) document.documentElement.style.setProperty("--cw-card-bg", bg.light.card);
+                      if (bg.light.secondary) document.documentElement.style.setProperty("--cw-secondary-bg", bg.light.secondary);
+                    }
+                    if (bg.dark) {
+                      if (bg.dark.primary) document.documentElement.style.setProperty("--cw-dark-primary-bg", bg.dark.primary);
+                      if (bg.dark.card) document.documentElement.style.setProperty("--cw-dark-card-bg", bg.dark.card);
+                      if (bg.dark.secondary) document.documentElement.style.setProperty("--cw-dark-secondary-bg", bg.dark.secondary);
+                    }
+                  }
                 } catch (e) {}
               })();
             `,

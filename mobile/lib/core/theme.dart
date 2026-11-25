@@ -37,15 +37,77 @@ class CashWiseColors {
   static const Color darkExpense = Color(0xFFFB7185);
 }
 
+class MobileBgColors {
+  final Color primary;
+  final Color card;
+  final Color secondary;
+
+  const MobileBgColors({
+    required this.primary,
+    required this.card,
+    required this.secondary,
+  });
+
+  String get hexPrimary => '#${(primary.toARGB32() & 0xFFFFFF).toRadixString(16).padLeft(6, '0').toUpperCase()}';
+  String get hexCard => '#${(card.toARGB32() & 0xFFFFFF).toRadixString(16).padLeft(6, '0').toUpperCase()}';
+  String get hexSecondary => '#${(secondary.toARGB32() & 0xFFFFFF).toRadixString(16).padLeft(6, '0').toUpperCase()}';
+}
+
+class MobileBgPreset {
+  final String key;
+  final String label;
+  final MobileBgColors light;
+  final MobileBgColors dark;
+
+  const MobileBgPreset({
+    required this.key,
+    required this.label,
+    required this.light,
+    required this.dark,
+  });
+}
+
+final mobileBgPresets = [
+  const MobileBgPreset(
+    key: 'original',
+    label: 'Original',
+    light: MobileBgColors(primary: Color(0xFFF8FAFC), card: Color(0xFFFFFFFF), secondary: Color(0xFFEEF2FF)),
+    dark: MobileBgColors(primary: Color(0xFF0F172A), card: Color(0xFF1E293B), secondary: Color(0xFF334155)),
+  ),
+  const MobileBgPreset(
+    key: 'ocean',
+    label: 'Ocean Blue',
+    light: MobileBgColors(primary: Color(0xFFF0F9FF), card: Color(0xFFFFFFFF), secondary: Color(0xFFE0F2FE)),
+    dark: MobileBgColors(primary: Color(0xFF0C192C), card: Color(0xFF132A4A), secondary: Color(0xFF1E3A5F)),
+  ),
+  const MobileBgPreset(
+    key: 'forest',
+    label: 'Forest Green',
+    light: MobileBgColors(primary: Color(0xFFF0FDF4), card: Color(0xFFFFFFFF), secondary: Color(0xFFDCFCE7)),
+    dark: MobileBgColors(primary: Color(0xFF0B1F17), card: Color(0xFF132E22), secondary: Color(0xFF1E4635)),
+  ),
+  const MobileBgPreset(
+    key: 'warm',
+    label: 'Warm Neutral',
+    light: MobileBgColors(primary: Color(0xFFFAF8F5), card: Color(0xFFFFFFFF), secondary: Color(0xFFF3EFEA)),
+    dark: MobileBgColors(primary: Color(0xFF1C1917), card: Color(0xFF292524), secondary: Color(0xFF44403C)),
+  ),
+];
+
 final themeModeNotifier = ValueNotifier<ThemeMode>(ThemeMode.light);
+final customMobileBgNotifier = ValueNotifier<MobileBgPreset>(mobileBgPresets[0]);
 
 class CashWiseTheme {
-  static ThemeData get darkTheme {
+  static ThemeData getDarkTheme([MobileBgColors? custom]) {
+    final bg = custom?.primary ?? CashWiseColors.darkBackground;
+    final surface = custom?.card ?? CashWiseColors.darkSurface;
+    final secondary = custom?.secondary ?? CashWiseColors.darkSurfaceSubtle;
+
     return ThemeData(
       useMaterial3: true,
       brightness: Brightness.dark,
-      scaffoldBackgroundColor: CashWiseColors.darkBackground,
-      colorScheme: const ColorScheme(
+      scaffoldBackgroundColor: bg,
+      colorScheme: ColorScheme(
         brightness: Brightness.dark,
         primary: CashWiseColors.darkPrimary,
         onPrimary: CashWiseColors.slate900,
@@ -53,16 +115,16 @@ class CashWiseTheme {
         onSecondary: CashWiseColors.slate900,
         error: CashWiseColors.darkExpense,
         onError: CashWiseColors.slate900,
-        surface: CashWiseColors.darkSurface,
+        surface: surface,
         onSurface: CashWiseColors.darkText,
       ),
-      appBarTheme: const AppBarTheme(
-        backgroundColor: CashWiseColors.darkSurface,
+      appBarTheme: AppBarTheme(
+        backgroundColor: surface,
         foregroundColor: CashWiseColors.darkText,
         elevation: 0,
         scrolledUnderElevation: 0.5,
         surfaceTintColor: Colors.transparent,
-        titleTextStyle: TextStyle(
+        titleTextStyle: const TextStyle(
           color: CashWiseColors.darkText,
           fontSize: 18,
           fontWeight: FontWeight.w700,
@@ -70,7 +132,7 @@ class CashWiseTheme {
         ),
       ),
       navigationBarTheme: NavigationBarThemeData(
-        backgroundColor: CashWiseColors.darkSurface,
+        backgroundColor: surface,
         surfaceTintColor: Colors.transparent,
         elevation: 0,
         indicatorColor: CashWiseColors.darkPrimary.withValues(alpha: 0.2),
@@ -96,7 +158,7 @@ class CashWiseTheme {
         }),
       ),
       cardTheme: CardThemeData(
-        color: CashWiseColors.darkSurface,
+        color: surface,
         elevation: 0,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),
@@ -111,7 +173,7 @@ class CashWiseTheme {
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: CashWiseColors.darkSurfaceSubtle,
+        fillColor: secondary,
         contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
@@ -151,21 +213,27 @@ class CashWiseTheme {
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
         ),
       ),
-      bottomSheetTheme: const BottomSheetThemeData(
-        backgroundColor: CashWiseColors.darkSurface,
+      bottomSheetTheme: BottomSheetThemeData(
+        backgroundColor: surface,
         surfaceTintColor: Colors.transparent,
-        shape: RoundedRectangleBorder(
+        shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
         ),
       ),
     );
   }
 
-  static ThemeData get lightTheme {
+  static ThemeData get darkTheme => getDarkTheme();
+
+  static ThemeData getLightTheme([MobileBgColors? custom]) {
+    final bg = custom?.primary ?? CashWiseColors.slate50;
+    final surface = custom?.card ?? CashWiseColors.pureWhite;
+    final secondary = custom?.secondary ?? CashWiseColors.indigo50;
+
     return ThemeData(
       useMaterial3: true,
-      scaffoldBackgroundColor: CashWiseColors.slate50,
-      colorScheme: const ColorScheme(
+      scaffoldBackgroundColor: bg,
+      colorScheme: ColorScheme(
         brightness: Brightness.light,
         primary: CashWiseColors.indigo600,
         onPrimary: CashWiseColors.pureWhite,
@@ -173,16 +241,16 @@ class CashWiseTheme {
         onSecondary: CashWiseColors.pureWhite,
         error: CashWiseColors.rose600,
         onError: CashWiseColors.pureWhite,
-        surface: CashWiseColors.pureWhite,
+        surface: surface,
         onSurface: CashWiseColors.slate900,
       ),
-      appBarTheme: const AppBarTheme(
-        backgroundColor: CashWiseColors.pureWhite,
+      appBarTheme: AppBarTheme(
+        backgroundColor: surface,
         foregroundColor: CashWiseColors.slate900,
         elevation: 0,
         scrolledUnderElevation: 0.5,
         surfaceTintColor: Colors.transparent,
-        titleTextStyle: TextStyle(
+        titleTextStyle: const TextStyle(
           color: CashWiseColors.slate900,
           fontSize: 18,
           fontWeight: FontWeight.w700,
@@ -190,7 +258,7 @@ class CashWiseTheme {
         ),
       ),
       navigationBarTheme: NavigationBarThemeData(
-        backgroundColor: CashWiseColors.pureWhite,
+        backgroundColor: surface,
         surfaceTintColor: Colors.transparent,
         elevation: 0,
         indicatorColor: CashWiseColors.indigo600.withValues(alpha: 0.12),
@@ -216,7 +284,7 @@ class CashWiseTheme {
         }),
       ),
       cardTheme: CardThemeData(
-        color: CashWiseColors.pureWhite,
+        color: surface,
         elevation: 0,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),
@@ -231,7 +299,7 @@ class CashWiseTheme {
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: CashWiseColors.pureWhite,
+        fillColor: secondary,
         contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
@@ -277,10 +345,10 @@ class CashWiseTheme {
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       ),
-      bottomSheetTheme: const BottomSheetThemeData(
-        backgroundColor: CashWiseColors.pureWhite,
+      bottomSheetTheme: BottomSheetThemeData(
+        backgroundColor: surface,
         surfaceTintColor: Colors.transparent,
-        shape: RoundedRectangleBorder(
+        shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
         ),
       ),
@@ -293,6 +361,8 @@ class CashWiseTheme {
       ),
     );
   }
+
+  static ThemeData get lightTheme => getLightTheme();
 }
 
 String formatRupiah(double amount) {
