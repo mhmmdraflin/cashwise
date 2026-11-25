@@ -64,7 +64,7 @@ Roadmap ini merinci implementasi bertahap dari awal hingga siap produksi sesuai 
 - [x] **Slice 5:** Penganggaran & Batas Pengeluaran Bulanan (Budgeting & Visual Alerts).
 - [x] **Slice 6:** Dashboard Analitik & Laporan Arus Kas (Net Worth Card, Pemasukan vs Pengeluaran).
 - [x] **Slice 7:** Ekspor Data Transaksi (CSV & JSON).
-- [ ] **Slice 8:** Sinkronisasi Hybrid Background Worker & Queue Processing.
+- [x] **Slice 8:** Sinkronisasi Hybrid Background Worker & Queue Processing (Bidirectional Delta Sync & LWW Conflict Resolution).
 - [ ] **Slice 9:** Polish UI/UX, Haptic Feedback & Offline Resilience.
 
 ---

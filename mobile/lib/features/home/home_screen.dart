@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:cashwise_mobile/core/theme.dart';
 import 'package:cashwise_mobile/core/repository.dart';
+import 'package:cashwise_mobile/core/sync_service.dart';
 
 const _presetEmojis = [
   '🍔','🍕','🍜','☕','🛒','🚗','🚌','⛽','🏠','💡',
@@ -38,6 +39,12 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
     _reload();
+    // Auto-sync with cloud backend
+    SyncService.instance.sync().then((res) {
+      if (res.inboundCount > 0 && mounted) {
+        _reload();
+      }
+    });
   }
 
   Future<void> _reload() async {
@@ -99,6 +106,64 @@ class _HomeScreenState extends State<HomeScreen> {
           ],
         ),
         actions: [
+          ValueListenableBuilder<SyncStatus>(
+            valueListenable: SyncService.instance.statusNotifier,
+            builder: (context, status, _) {
+              if (status == SyncStatus.syncing) {
+                return const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 10),
+                  child: Center(
+                    child: SizedBox(
+                      width: 16,
+                      height: 16,
+                      child: CircularProgressIndicator(strokeWidth: 2, color: CashWiseColors.indigo600),
+                    ),
+                  ),
+                );
+              }
+              IconData icon = Icons.cloud_done_rounded;
+              Color color = CashWiseColors.emerald600;
+              String tooltip = 'Cloud Synced - Ketuk untuk sinkronisasi';
+
+              if (status == SyncStatus.error) {
+                icon = Icons.sync_problem_rounded;
+                color = CashWiseColors.rose600;
+                tooltip = 'Sinkronisasi tertunda - Ketuk untuk coba lagi';
+              } else if (status == SyncStatus.offline) {
+                icon = Icons.cloud_off_rounded;
+                color = CashWiseColors.amber600;
+                tooltip = 'Mode Offline';
+              } else if (status == SyncStatus.idle) {
+                icon = Icons.sync_rounded;
+                color = CashWiseColors.slate500;
+                tooltip = 'Sinkronisasi sekarang';
+              }
+
+              return IconButton(
+                icon: Icon(icon, size: 20, color: color),
+                tooltip: tooltip,
+                onPressed: () async {
+                  final messenger = ScaffoldMessenger.of(context);
+                  final res = await SyncService.instance.sync();
+                  if (!mounted) return;
+                  if (res.inboundCount > 0) {
+                    _reload();
+                  }
+                  messenger.showSnackBar(
+                    SnackBar(
+                      content: Text(
+                        res.success
+                            ? 'Sinkronisasi cloud berhasil (${res.appliedCount} terkirim, ${res.inboundCount} diterima)'
+                            : 'Sinkronisasi gagal: ${res.error ?? "Offline"}',
+                      ),
+                      duration: const Duration(seconds: 2),
+                      backgroundColor: res.success ? CashWiseColors.emerald600 : CashWiseColors.rose600,
+                    ),
+                  );
+                },
+              );
+            },
+          ),
           IconButton(
             icon: const Icon(Icons.palette_outlined, size: 20),
             tooltip: 'Penyesuaian Background',

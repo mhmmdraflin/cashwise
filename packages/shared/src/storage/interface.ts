@@ -69,4 +69,10 @@ export interface ICashWiseStorage {
   getPendingSyncQueue(): Promise<SyncQueueItem[]>;
   markSyncQueueItem(id: number, status: 'SYNCED' | 'FAILED', error?: string): Promise<void>;
   clearCompletedSyncQueue(): Promise<void>;
+  applyServerChanges(changes: {
+    accounts?: Account[];
+    categories?: Category[];
+    transactions?: Transaction[];
+    budgets?: Budget[];
+  }): Promise<{ updatedCount: number }>;
 }

@@ -679,4 +679,38 @@ export class CashWiseIndexedDbStorage implements ICashWiseStorage {
       }
     }
   }
+
+  async applyServerChanges(changes: {
+    accounts?: Account[];
+    categories?: Category[];
+    transactions?: Transaction[];
+    budgets?: Budget[];
+  }): Promise<{ updatedCount: number }> {
+    let count = 0;
+    if (changes.accounts && changes.accounts.length > 0) {
+      for (const a of changes.accounts) {
+        await this.runTx('accounts', 'readwrite', (s) => s.put(a));
+        count++;
+      }
+    }
+    if (changes.categories && changes.categories.length > 0) {
+      for (const c of changes.categories) {
+        await this.runTx('categories', 'readwrite', (s) => s.put(c));
+        count++;
+      }
+    }
+    if (changes.transactions && changes.transactions.length > 0) {
+      for (const t of changes.transactions) {
+        await this.runTx('transactions', 'readwrite', (s) => s.put(t));
+        count++;
+      }
+    }
+    if (changes.budgets && changes.budgets.length > 0) {
+      for (const b of changes.budgets) {
+        await this.runTx('budgets', 'readwrite', (s) => s.put(b));
+        count++;
+      }
+    }
+    return { updatedCount: count };
+  }
 }

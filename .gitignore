@@ -1,4 +1,5 @@
 # Logs and runtime caches
+.cache/
 node_modules/
 .pnp
 .pnp.js

@@ -15,6 +15,7 @@ import { AccountManager } from '@/components/AccountManager';
 import { CategoryManager } from '@/components/CategoryManager';
 import { StatsView } from '@/components/StatsView';
 import { getStorage, DEFAULT_USER_ID } from '@/lib/db';
+import { runWebSync, subscribeSyncStatus, SyncState } from '@/lib/sync';
 
 type NavTab = 'overview' | 'transactions' | 'accounts' | 'categories' | 'stats' | 'settings';
 type ThemeMode = 'light' | 'dark' | 'system';
@@ -87,6 +88,7 @@ export default function CashWiseApp() {
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [syncStatus, setSyncStatus] = useState<SyncState>('IDLE');
 
   // Modal State for Quick Add Transaction
   const [isTxModalOpen, setIsTxModalOpen] = useState(false);
@@ -227,6 +229,22 @@ export default function CashWiseApp() {
 
   useEffect(() => {
     loadData();
+    const unsubscribe = subscribeSyncStatus((status) => {
+      setSyncStatus(status);
+    });
+
+    const handleDataChanged = () => {
+      loadData();
+    };
+    window.addEventListener('cashwise:data-changed', handleDataChanged);
+
+    // Initial background sync
+    runWebSync().then(() => loadData());
+
+    return () => {
+      unsubscribe();
+      window.removeEventListener('cashwise:data-changed', handleDataChanged);
+    };
   }, []);
 
   // --- CRUD HANDLERS ---
@@ -251,6 +269,7 @@ export default function CashWiseApp() {
       date: data.date,
     });
     await loadData();
+    runWebSync();
   }
 
   async function handleUpdateTransaction(
@@ -268,6 +287,7 @@ export default function CashWiseApp() {
     const storage = await getStorage();
     await storage.updateTransaction(id, data);
     await loadData();
+    runWebSync();
   }
 
   async function handleDeleteTransaction(id: string) {
@@ -275,6 +295,7 @@ export default function CashWiseApp() {
     const storage = await getStorage();
     await storage.deleteTransaction(id);
     await loadData();
+    runWebSync();
   }
 
   // Account Handlers
@@ -299,6 +320,7 @@ export default function CashWiseApp() {
       isGroupHidden: false,
     });
     await loadData();
+    runWebSync();
   }
 
   async function handleUpdateAccount(
@@ -313,6 +335,7 @@ export default function CashWiseApp() {
     const storage = await getStorage();
     await storage.updateAccount(id, data);
     await loadData();
+    runWebSync();
   }
 
   async function handleDeleteAccount(id: string) {
@@ -320,18 +343,21 @@ export default function CashWiseApp() {
     const storage = await getStorage();
     await storage.deleteAccount(id);
     await loadData();
+    runWebSync();
   }
 
   async function handleMoveAccountToTop(id: string) {
     const storage = await getStorage();
     await storage.moveAccountToTop(id);
     await loadData();
+    runWebSync();
   }
 
   async function handleToggleGroupHidden(group: string, isHidden: boolean) {
     const storage = await getStorage();
     await storage.toggleGroupHidden(DEFAULT_USER_ID, group, isHidden);
     await loadData();
+    runWebSync();
   }
 
   // Category Handlers
@@ -351,6 +377,7 @@ export default function CashWiseApp() {
       isDefault: false,
     });
     await loadData();
+    runWebSync();
   }
 
   async function handleUpdateCategory(
@@ -365,6 +392,7 @@ export default function CashWiseApp() {
     const storage = await getStorage();
     await storage.updateCategory(id, data);
     await loadData();
+    runWebSync();
   }
 
   async function handleDeleteCategory(id: string) {
@@ -372,6 +400,7 @@ export default function CashWiseApp() {
     const storage = await getStorage();
     await storage.deleteCategory(id);
     await loadData();
+    runWebSync();
   }
 
   // Quick Modal Submit
@@ -631,26 +660,66 @@ export default function CashWiseApp() {
           </nav>
         </div>
 
-        {/* Footer: Privacy Status & Theme Switcher */}
+        {/* Footer: Privacy Status, Cloud Sync & Theme Switcher */}
         <div className="flex flex-col gap-sm">
           <div className="p-md rounded-md bg-light-background dark:bg-dark-background border border-light-border dark:border-dark-border flex flex-col gap-xs">
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-xs text-light-income-text dark:text-dark-income-text">
-                <span className="material-symbols-outlined text-[16px]">lock</span>
-                <span className="font-label text-label-sm font-semibold">Offline Vault Active</span>
+              <div className="flex items-center gap-xs">
+                {syncStatus === 'SYNCING' ? (
+                  <>
+                    <span className="material-symbols-outlined text-[16px] text-indigo-600 animate-spin">sync</span>
+                    <span className="font-label text-label-sm font-semibold text-indigo-600 dark:text-indigo-400">Syncing...</span>
+                  </>
+                ) : syncStatus === 'SYNCED' ? (
+                  <>
+                    <span className="material-symbols-outlined text-[16px] text-light-income-text dark:text-dark-income-text">cloud_done</span>
+                    <span className="font-label text-label-sm font-semibold text-light-income-text dark:text-dark-income-text">Cloud Synced</span>
+                  </>
+                ) : syncStatus === 'OFFLINE' ? (
+                  <>
+                    <span className="material-symbols-outlined text-[16px] text-amber-500">cloud_off</span>
+                    <span className="font-label text-label-sm font-semibold text-amber-600 dark:text-amber-400">Offline Vault</span>
+                  </>
+                ) : syncStatus === 'ERROR' ? (
+                  <>
+                    <span className="material-symbols-outlined text-[16px] text-rose-500">sync_problem</span>
+                    <span className="font-label text-label-sm font-semibold text-rose-600 dark:text-rose-400">Sync Pending</span>
+                  </>
+                ) : (
+                  <>
+                    <span className="material-symbols-outlined text-[16px] text-light-income-text dark:text-dark-income-text">lock</span>
+                    <span className="font-label text-label-sm font-semibold text-light-income-text dark:text-dark-income-text">Local-First Vault</span>
+                  </>
+                )}
               </div>
-              <button
-                onClick={toggleThemeMode}
-                title={`Tema saat ini: ${themeMode}. Klik untuk ganti.`}
-                className="w-7 h-7 rounded-sm flex items-center justify-center text-light-on-surface-muted dark:text-dark-on-surface-muted hover:bg-light-surface-subtle dark:hover:bg-dark-surface-subtle transition-colors"
-              >
-                <span className="material-symbols-outlined text-[18px]">
-                  {themeMode === 'dark' ? 'dark_mode' : themeMode === 'light' ? 'light_mode' : 'contrast'}
-                </span>
-              </button>
+              <div className="flex items-center gap-1">
+                <button
+                  onClick={() => runWebSync()}
+                  disabled={syncStatus === 'SYNCING'}
+                  title="Sinkronisasi sekarang"
+                  className="w-7 h-7 rounded-sm flex items-center justify-center text-light-on-surface-muted dark:text-dark-on-surface-muted hover:bg-light-surface-subtle dark:hover:bg-dark-surface-subtle transition-colors disabled:opacity-50"
+                >
+                  <span className={`material-symbols-outlined text-[18px] ${syncStatus === 'SYNCING' ? 'animate-spin' : ''}`}>sync</span>
+                </button>
+                <button
+                  onClick={toggleThemeMode}
+                  title={`Tema saat ini: ${themeMode}. Klik untuk ganti.`}
+                  className="w-7 h-7 rounded-sm flex items-center justify-center text-light-on-surface-muted dark:text-dark-on-surface-muted hover:bg-light-surface-subtle dark:hover:bg-dark-surface-subtle transition-colors"
+                >
+                  <span className="material-symbols-outlined text-[18px]">
+                    {themeMode === 'dark' ? 'dark_mode' : themeMode === 'light' ? 'light_mode' : 'contrast'}
+                  </span>
+                </button>
+              </div>
             </div>
             <p className="font-body text-body-sm text-light-on-surface-muted dark:text-dark-on-surface-muted">
-              All records stored locally in IndexedDB.
+              {syncStatus === 'SYNCED'
+                ? 'Data otomatis tersinkron ke cloud & mobile.'
+                : syncStatus === 'SYNCING'
+                ? 'Sedang mengirim pembaruan ke server...'
+                : syncStatus === 'OFFLINE'
+                ? 'Menyimpan di IndexedDB sampai online.'
+                : 'All records stored locally in IndexedDB.'}
             </p>
           </div>
         </div>

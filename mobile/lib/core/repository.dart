@@ -1,6 +1,8 @@
+import 'dart:convert';
 import 'package:sqflite/sqflite.dart';
 import 'package:uuid/uuid.dart';
 import 'package:cashwise_mobile/core/db_helper.dart';
+import 'package:cashwise_mobile/core/sync_service.dart';
 
 const _uuid = Uuid();
 
@@ -24,7 +26,7 @@ class TransactionRepository {
     final db = await _db.database;
     final now = DateTime.now().toIso8601String();
     final id = _uuid.v4();
-    await db.insert('transactions', {
+    final txData = {
       'id': id,
       'userId': '00000000-0000-4000-8000-000000000001',
       'accountId': accountId,
@@ -38,7 +40,18 @@ class TransactionRepository {
       'createdAt': now,
       'updatedAt': now,
       'version': 1,
+    };
+    await db.insert('transactions', txData);
+    await db.insert('sync_queue', {
+      'entityType': 'transaction',
+      'entityId': id,
+      'action': 'CREATE',
+      'payload': jsonEncode(txData),
+      'createdAt': now,
+      'status': 'PENDING',
+      'retryCount': 0,
     });
+    SyncService.instance.sync().ignore();
 
     if (type == 'EXPENSE') {
       await db.rawUpdate('UPDATE accounts SET balance = balance - ? WHERE id = ?', [amount, accountId]);
@@ -80,7 +93,8 @@ class TransactionRepository {
       }
     }
 
-    await db.update('transactions', {
+    final updateData = {
+      'id': id,
       'type': type,
       'accountId': accountId,
       'toAccountId': toAccountId,
@@ -89,7 +103,18 @@ class TransactionRepository {
       'date': date,
       'note': note,
       'updatedAt': now,
-    }, where: 'id = ?', whereArgs: [id]);
+    };
+    await db.update('transactions', updateData, where: 'id = ?', whereArgs: [id]);
+    await db.insert('sync_queue', {
+      'entityType': 'transaction',
+      'entityId': id,
+      'action': 'UPDATE',
+      'payload': jsonEncode(updateData),
+      'createdAt': now,
+      'status': 'PENDING',
+      'retryCount': 0,
+    });
+    SyncService.instance.sync().ignore();
 
     if (type == 'EXPENSE') {
       await db.rawUpdate('UPDATE accounts SET balance = balance - ? WHERE id = ?', [amount, accountId]);
@@ -124,6 +149,16 @@ class TransactionRepository {
     }
 
     await db.update('transactions', {'deletedAt': now}, where: 'id = ?', whereArgs: [id]);
+    await db.insert('sync_queue', {
+      'entityType': 'transaction',
+      'entityId': id,
+      'action': 'DELETE',
+      'payload': jsonEncode({'id': id, 'deletedAt': now}),
+      'createdAt': now,
+      'status': 'PENDING',
+      'retryCount': 0,
+    });
+    SyncService.instance.sync().ignore();
   }
 }
 
@@ -148,7 +183,7 @@ class AccountRepository {
     final maxOrder = Sqflite.firstIntValue(
       await db.rawQuery('SELECT MAX(`order`) FROM accounts WHERE deletedAt IS NULL'),
     ) ?? 0;
-    await db.insert('accounts', {
+    final accData = {
       'id': id,
       'userId': '00000000-0000-4000-8000-000000000001',
       'name': name,
@@ -163,24 +198,55 @@ class AccountRepository {
       'createdAt': now,
       'updatedAt': now,
       'version': 1,
+    };
+    await db.insert('accounts', accData);
+    await db.insert('sync_queue', {
+      'entityType': 'account',
+      'entityId': id,
+      'action': 'CREATE',
+      'payload': jsonEncode(accData),
+      'createdAt': now,
+      'status': 'PENDING',
+      'retryCount': 0,
     });
+    SyncService.instance.sync().ignore();
   }
 
   Future<void> update(String id, {String? name, String? group, double? balance, String? description}) async {
     final db = await _db.database;
     final now = DateTime.now().toIso8601String();
-    final data = <String, dynamic>{'updatedAt': now};
+    final data = <String, dynamic>{'id': id, 'updatedAt': now};
     if (name != null) data['name'] = name;
     if (group != null) data['group'] = group;
     if (balance != null) data['balance'] = balance;
     if (description != null) data['description'] = description;
     await db.update('accounts', data, where: 'id = ?', whereArgs: [id]);
+    await db.insert('sync_queue', {
+      'entityType': 'account',
+      'entityId': id,
+      'action': 'UPDATE',
+      'payload': jsonEncode(data),
+      'createdAt': now,
+      'status': 'PENDING',
+      'retryCount': 0,
+    });
+    SyncService.instance.sync().ignore();
   }
 
   Future<void> delete(String id) async {
     final db = await _db.database;
     final now = DateTime.now().toIso8601String();
     await db.update('accounts', {'deletedAt': now}, where: 'id = ?', whereArgs: [id]);
+    await db.insert('sync_queue', {
+      'entityType': 'account',
+      'entityId': id,
+      'action': 'DELETE',
+      'payload': jsonEncode({'id': id, 'deletedAt': now}),
+      'createdAt': now,
+      'status': 'PENDING',
+      'retryCount': 0,
+    });
+    SyncService.instance.sync().ignore();
   }
 
   Future<void> moveToTop(String id) async {
@@ -217,7 +283,7 @@ class CategoryRepository {
     final db = await _db.database;
     final now = DateTime.now().toIso8601String();
     final id = _uuid.v4();
-    await db.insert('categories', {
+    final catData = {
       'id': id,
       'userId': '00000000-0000-4000-8000-000000000001',
       'name': name,
@@ -228,23 +294,54 @@ class CategoryRepository {
       'createdAt': now,
       'updatedAt': now,
       'version': 1,
+    };
+    await db.insert('categories', catData);
+    await db.insert('sync_queue', {
+      'entityType': 'category',
+      'entityId': id,
+      'action': 'CREATE',
+      'payload': jsonEncode(catData),
+      'createdAt': now,
+      'status': 'PENDING',
+      'retryCount': 0,
     });
+    SyncService.instance.sync().ignore();
   }
 
   Future<void> update(String id, {String? name, String? type, String? icon, String? color}) async {
     final db = await _db.database;
     final now = DateTime.now().toIso8601String();
-    final data = <String, dynamic>{'updatedAt': now};
+    final data = <String, dynamic>{'id': id, 'updatedAt': now};
     if (name != null) data['name'] = name;
     if (type != null) data['type'] = type;
     if (icon != null) data['icon'] = icon;
     if (color != null) data['color'] = color;
     await db.update('categories', data, where: 'id = ?', whereArgs: [id]);
+    await db.insert('sync_queue', {
+      'entityType': 'category',
+      'entityId': id,
+      'action': 'UPDATE',
+      'payload': jsonEncode(data),
+      'createdAt': now,
+      'status': 'PENDING',
+      'retryCount': 0,
+    });
+    SyncService.instance.sync().ignore();
   }
 
   Future<void> delete(String id) async {
     final db = await _db.database;
     final now = DateTime.now().toIso8601String();
     await db.update('categories', {'deletedAt': now}, where: 'id = ?', whereArgs: [id]);
+    await db.insert('sync_queue', {
+      'entityType': 'category',
+      'entityId': id,
+      'action': 'DELETE',
+      'payload': jsonEncode({'id': id, 'deletedAt': now}),
+      'createdAt': now,
+      'status': 'PENDING',
+      'retryCount': 0,
+    });
+    SyncService.instance.sync().ignore();
   }
 }
