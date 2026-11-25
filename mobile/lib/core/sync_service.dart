@@ -28,6 +28,9 @@ class SyncService {
   final ValueNotifier<SyncStatus> statusNotifier = ValueNotifier<SyncStatus>(SyncStatus.idle);
   String? lastSyncTimestamp;
 
+  /// Saat false, aplikasi mobile beroperasi murni secara lokal (SQLite offline-first).
+  bool isCloudSyncEnabled = false;
+
   String get defaultServerUrl {
     // 10.0.2.2 for Android Emulator, localhost for macOS / iOS Simulator
     if (Platform.isAndroid) {
@@ -36,7 +39,12 @@ class SyncService {
     return 'http://127.0.0.1:3000';
   }
 
-  Future<SyncResult> sync({String? baseUrl}) async {
+  Future<SyncResult> sync({String? baseUrl, bool force = false}) async {
+    if (!isCloudSyncEnabled && !force) {
+      statusNotifier.value = SyncStatus.idle;
+      return SyncResult(success: true, appliedCount: 0, inboundCount: 0);
+    }
+
     final serverUrl = baseUrl ?? defaultServerUrl;
     statusNotifier.value = SyncStatus.syncing;
 

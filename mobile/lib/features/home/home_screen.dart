@@ -109,6 +109,24 @@ class _HomeScreenState extends State<HomeScreen> {
           ValueListenableBuilder<SyncStatus>(
             valueListenable: SyncService.instance.statusNotifier,
             builder: (context, status, _) {
+              final isLocalOnly = !SyncService.instance.isCloudSyncEnabled;
+
+              if (isLocalOnly) {
+                return IconButton(
+                  icon: const Icon(Icons.lock_outline_rounded, size: 20, color: CashWiseColors.emerald600),
+                  tooltip: 'Local Vault (100% Lokal)',
+                  onPressed: () {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Mode Offline-First Aktif: Semua data tersimpan 100% lokal di SQLite perangkat Anda.'),
+                        duration: Duration(seconds: 3),
+                        backgroundColor: CashWiseColors.slate800,
+                      ),
+                    );
+                  },
+                );
+              }
+
               if (status == SyncStatus.syncing) {
                 return const Padding(
                   padding: EdgeInsets.symmetric(horizontal: 10),
@@ -144,7 +162,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 tooltip: tooltip,
                 onPressed: () async {
                   final messenger = ScaffoldMessenger.of(context);
-                  final res = await SyncService.instance.sync();
+                  final res = await SyncService.instance.sync(force: true);
                   if (!mounted) return;
                   if (res.inboundCount > 0) {
                     _reload();
