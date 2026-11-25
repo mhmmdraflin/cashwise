@@ -72,7 +72,49 @@ cashwise/
 4. **Tahap 4 – Arsitektur dan Database** *(Status: Selesai ✅)*
 5. **Tahap 5 – UI/UX dan Design System (Anti-Slop)** *(Status: Selesai ✅)*
 6. **Tahap 6 – Workspace dan Context Engineering** *(Status: Selesai ✅)*
-7. **Tahap 7 – Development (Vertical Slicing: Slices 1–9)** *(Status: Sedang Berjalan 🚀 - Slices 1–6 Selesai & Web App Runnable)*
+7. **Tahap 7 – Development (Vertical Slicing: Slices 1–9)** *(Status: Slices 1–8 Selesai ✅ | Slice 9 In Progress 🚀)*
+   - [x] **Slice 1:** Scaffolding Web (Next.js App Router) & Mobile (Flutter) dengan local storage.
+   - [x] **Slice 2:** Manajemen Akun / Kantong Keuangan (Saldo real-time, grouping, reorder priority).
+   - [x] **Slice 3:** Pencatatan Transaksi Kilat (Pengeluaran, Pemasukan, Transfer antar-kantong).
+   - [x] **Slice 4:** Manajemen Kategori Sistem & Custom dengan Visual Emojis dan auto-migrasi.
+   - [x] **Slice 5:** Penganggaran & Batas Pengeluaran Bulanan (Budgeting & Visual Alerts).
+   - [x] **Slice 6:** Dashboard Analitik & Laporan Arus Kas (Net Worth Card, Income vs Expense).
+   - [x] **Slice 7:** Ekspor Data Transaksi (CSV & JSON).
+   - [x] **Slice 8:** Sinkronisasi Hybrid Cloud Engine (Bidirectional Delta Sync, `sync_queue`, LWW Conflict Resolution).
+   - [ ] **Slice 9:** Polish UI/UX, Haptic Feedback & Offline Resilience.
 8. **Tahap 8 – Testing, Security & Quality Assurance**
-9. **Tahap 9 – Deployment dan Release**
+9. **Tahap 9 – Deployment dan Release (Vercel & Android APK/AAB)**
 10. **Tahap 10 – Final Review dan Handover**
+
+---
+
+## ⚡ Panduan Menjalankan Proyek (Quick Start)
+
+### 1. Web Application (Next.js 14)
+```bash
+# Build paket shared dan aplikasi web
+npm --workspace=@cashwise/shared run build
+npm run build:web
+
+# Menjalankan server web produksi lokal (port 3000)
+npm run start:web
+
+# Atau mode development
+npm run dev:web
+```
+Buka browser di **`http://localhost:3000`**.
+
+### 2. Mobile Application (Flutter)
+```bash
+cd mobile
+
+# Jalankan analisis kode
+flutter analyze
+
+# Jalankan aplikasi (Desktop macOS / Android Emulator / iOS Simulator)
+flutter run
+```
+
+### 3. Endpoint Cloud Sync (`/api/sync`)
+- **GET `/api/sync`**: Memeriksa status kesehatan (*health status*) dan ringkasan metrik server.
+- **POST `/api/sync`**: Menangani sinkronisasi delta dua arah (*bidirectional push & pull*) antara Web dan Mobile dengan resolusi konflik *Last-Write-Wins (LWW)*.
