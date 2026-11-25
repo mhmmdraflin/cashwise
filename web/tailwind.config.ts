@@ -1,6 +1,7 @@
 import type { Config } from 'tailwindcss';
 
 const config: Config = {
+  darkMode: 'class',
   content: [
     './src/pages/**/*.{js,ts,jsx,tsx,mdx}',
     './src/components/**/*.{js,ts,jsx,tsx,mdx}',
@@ -10,6 +11,51 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
+        // Light Tokens from Prototype
+        'light-primary': '#4F46E5',
+        'light-on-primary': '#FFFFFF',
+        'light-primary-tint': '#EEF2FF',
+        'light-on-primary-tint': '#4F46E5',
+        'light-background': '#F8FAFC',
+        'light-background-secondary': '#F1F5F9',
+        'light-on-background': '#0F172A',
+        'light-surface': '#FFFFFF',
+        'light-on-surface': '#0F172A',
+        'light-surface-subtle': '#F1F5F9',
+        'light-on-surface-muted': '#64748B',
+        'light-border': '#E2E8F0',
+        'light-income': '#059669',
+        'light-income-text': '#047857',
+        'light-income-bg': '#ECFDF5',
+        'light-expense': '#E11D48',
+        'light-expense-text': '#BE123C',
+        'light-expense-bg': '#FFF1F2',
+        'light-warning': '#D97706',
+        'light-warning-bg': '#FFFBEB',
+
+        // Dark Tokens from Prototype
+        'dark-primary': '#6366F1',
+        'dark-on-primary': '#000000',
+        'dark-primary-tint': '#312E81',
+        'dark-on-primary-tint': '#E0E7FF',
+        'dark-background': '#0F172A',
+        'dark-background-secondary': '#111827',
+        'dark-on-background': '#F8FAFC',
+        'dark-surface': '#1E293B',
+        'dark-on-surface': '#F8FAFC',
+        'dark-surface-subtle': '#334155',
+        'dark-on-surface-muted': '#94A3B8',
+        'dark-border': '#334155',
+        'dark-income': '#34D399',
+        'dark-income-text': '#34D399',
+        'dark-income-bg': '#064E3B',
+        'dark-expense': '#FB7185',
+        'dark-expense-text': '#FDA4AF',
+        'dark-expense-bg': '#881337',
+        'dark-warning': '#FBBF24',
+        'dark-warning-bg': '#451A03',
+
+        // Backwards compatibility tokens
         primary: {
           DEFAULT: '#0F172A',
           50: '#F8FAFC',
@@ -48,9 +94,52 @@ const config: Config = {
           border: '#C7D2FE',
         },
       },
+      borderRadius: {
+        sm: '6px',
+        DEFAULT: '8px',
+        md: '12px',
+        lg: '16px',
+        xl: '20px',
+        full: '9999px',
+      },
+      spacing: {
+        xs: '4px',
+        sm: '8px',
+        md: '16px',
+        lg: '24px',
+        xl: '32px',
+        '2xl': '48px',
+      },
       fontFamily: {
+        display: ['"Inter"', 'sans-serif'],
+        headline: ['"Inter"', 'sans-serif'],
+        title: ['"Inter"', 'sans-serif'],
+        body: ['"Inter"', 'sans-serif'],
+        label: ['"Inter"', 'sans-serif'],
+        mono: ['"JetBrains Mono"', 'monospace'],
         sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
-        mono: ['ui-monospace', 'SF Mono', 'JetBrains Mono', 'Menlo', 'Consolas', 'monospace'],
+      },
+      fontSize: {
+        'display-lg': ['36px', { lineHeight: '44px', letterSpacing: '-0.75px', fontWeight: '700' }],
+        'display-lg-mobile': ['28px', { lineHeight: '34px', letterSpacing: '-0.5px', fontWeight: '700' }],
+        'headline-lg': ['24px', { lineHeight: '32px', letterSpacing: '-0.35px', fontWeight: '600' }],
+        'headline-md': ['20px', { lineHeight: '28px', letterSpacing: '-0.25px', fontWeight: '600' }],
+        'title-md': ['16px', { lineHeight: '24px', letterSpacing: '-0.1px', fontWeight: '600' }],
+        'body-md': ['14px', { lineHeight: '20px', letterSpacing: '0px', fontWeight: '400' }],
+        'body-sm': ['13px', { lineHeight: '18px', letterSpacing: '0px', fontWeight: '400' }],
+        'label-lg': ['14px', { lineHeight: '20px', letterSpacing: '0px', fontWeight: '500' }],
+        'label-sm': ['12px', { lineHeight: '16px', letterSpacing: '0.2px', fontWeight: '500' }],
+        'mono-sm': ['13px', { lineHeight: '18px', letterSpacing: '0px', fontWeight: '500' }],
+      },
+      transitionDuration: {
+        'state-change': '120ms',
+        'surface-enter': '220ms',
+        'surface-exit': '150ms',
+      },
+      transitionTimingFunction: {
+        'state-change': 'ease-out',
+        'surface-enter': 'cubic-bezier(0.2, 0, 0, 1)',
+        'surface-exit': 'cubic-bezier(0.3, 0, 1, 1)',
       },
       boxShadow: {
         card: '0 1px 3px 0 rgba(15, 23, 42, 0.05), 0 1px 2px -1px rgba(15, 23, 42, 0.05)',
