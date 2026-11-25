@@ -1016,10 +1016,9 @@ class _HomeScreenState extends State<HomeScreen> {
                           _showCategoryForm(context);
                         },
                         icon: const Icon(Icons.add_rounded, size: 16),
-                        label: const Text('Tambah'),
+                        label: const Text('Tambah', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 12)),
                         style: ElevatedButton.styleFrom(
                           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                          textStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700),
                         ),
                       ),
                     ],
