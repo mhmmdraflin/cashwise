@@ -115,6 +115,40 @@ flutter analyze
 flutter run
 ```
 
+---
+
+## 📲 Unduh & Jalankan Aplikasi Mobile (Local-Only Offline Vault)
+
+Aplikasi mobile CashWise telah disetel beroperasi secara **100% Local-First** menggunakan database lokal **SQLite** (`cashwise_local.db`). Seluruh data transaksi, akun, dan kategori tersimpan aman di perangkat tanpa memerlukan server luar.
+
+### 🤖 Android (APK)
+- **Tautan Unduh APK Lokal:** [Unduh CashWise Android APK](http://localhost:3000/downloads/cashwise.apk)
+- **Panduan Instalasi Android:**
+  1. Jalankan web server lokal (`npm run start:web` di port 3000).
+  2. Unduh file APK melalui tautan di atas: [http://localhost:3000/downloads/cashwise.apk](http://localhost:3000/downloads/cashwise.apk).
+  3. Buka file `.apk` di ponsel Android dan pilih **Install**.
+  4. Izinkan *"Install unknown apps"* pada browser/file manager jika diminta oleh sistem Android.
+  5. Aplikasi CashWise langsung siap digunakan secara *offline-first*.
+
+### 🍏 iOS (iPhone & iPad)
+> **Catatan Teknis:** File berekstensi `.apk` adalah format khusus Android dan tidak dapat dijalankan di iOS. Perangkat Apple menggunakan format `.ipa` atau instalasi langsung (*direct provisioning*) melalui macOS.
+
+- **Cara Memasang Langsung ke iPhone via Mac (Developer Run):**
+  1. Sambungkan iPhone ke Mac menggunakan kabel data USB/Lightning.
+  2. Pastikan **Developer Mode** aktif di iPhone (*Settings > Privacy & Security > Developer Mode*).
+  3. Jalankan perintah instalasi otomatis ke iPhone:
+     ```bash
+     cd mobile
+     flutter run -d ios
+     ```
+  4. **Atau Melalui Xcode:**
+     ```bash
+     open mobile/ios/Runner.xcworkspace
+     ```
+     Pilih target iPhone Anda di bilah atas Xcode, lalu tekan tombol **Run (▶️)**. Aplikasi akan otomatis ter-install dan muncul di layar utama iPhone Anda.
+
+---
+
 ### 3. Endpoint Cloud Sync (`/api/sync`)
 - **GET `/api/sync`**: Memeriksa status kesehatan (*health status*) dan ringkasan metrik server.
 - **POST `/api/sync`**: Menangani sinkronisasi delta dua arah (*bidirectional push & pull*) antara Web dan Mobile dengan resolusi konflik *Last-Write-Wins (LWW)*.
