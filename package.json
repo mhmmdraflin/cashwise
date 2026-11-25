@@ -11,6 +11,7 @@
   "scripts": {
     "dev:backend": "npm --workspace=backend run dev",
     "dev:web": "npm --workspace=web run dev",
+    "start:web": "npm --workspace=web run start",
     "build:web": "npm --workspace=web run build",
     "build:backend": "npm --workspace=backend run build",
     "build:shared": "npm --workspace=packages/shared run build",
