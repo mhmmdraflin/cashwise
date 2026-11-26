@@ -223,8 +223,14 @@ class _HomeScreenState extends State<HomeScreen> {
               ],
             ),
       bottomNavigationBar: Container(
-        decoration: const BoxDecoration(
-          border: Border(top: BorderSide(color: CashWiseColors.slate200)),
+        decoration: BoxDecoration(
+          border: Border(
+            top: BorderSide(
+              color: Theme.of(context).brightness == Brightness.dark
+                  ? CashWiseColors.darkBorder
+                  : CashWiseColors.slate200,
+            ),
+          ),
         ),
         child: NavigationBar(
           selectedIndex: _currentTab,
@@ -269,19 +275,9 @@ class _HomeScreenState extends State<HomeScreen> {
         Container(
           padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
-            gradient: const LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [Color(0xFF1E293B), Color(0xFF0F172A)],
-            ),
+            color: const Color(0xFF0F172A),
             borderRadius: BorderRadius.circular(16),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.1),
-                blurRadius: 10,
-                offset: const Offset(0, 4),
-              ),
-            ],
+            border: Border.all(color: const Color(0xFF334155)),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -299,20 +295,24 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                   ),
                   InkWell(
-                    onTap: () => setState(() => _hideBalance = !_hideBalance),
+                    onTap: () {
+                      HapticFeedback.selectionClick();
+                      setState(() => _hideBalance = !_hideBalance);
+                    },
                     borderRadius: BorderRadius.circular(20),
-                    child: Padding(
-                      padding: const EdgeInsets.all(4),
+                    child: Container(
+                      constraints: const BoxConstraints(minWidth: 44, minHeight: 44),
+                      alignment: Alignment.center,
                       child: Icon(
                         _hideBalance ? Icons.visibility_off_rounded : Icons.visibility_rounded,
-                        size: 18,
+                        size: 20,
                         color: CashWiseColors.slate400,
                       ),
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 4),
               Text(
                 _hideBalance ? '••••••••' : formatRupiah(_totalBalance),
                 style: const TextStyle(
@@ -324,36 +324,29 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
               const SizedBox(height: 12),
-              Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                    decoration: BoxDecoration(
-                      color: CashWiseColors.emerald600.withValues(alpha: 0.2),
-                      borderRadius: BorderRadius.circular(6),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF064E3B).withValues(alpha: 0.6),
+                  borderRadius: BorderRadius.circular(6),
+                  border: Border.all(color: const Color(0xFF059669).withValues(alpha: 0.4)),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.shield_outlined, size: 13, color: Color(0xFF34D399)),
+                    const SizedBox(width: 5),
+                    Text(
+                      '${_accounts.length} Akun Aktif · 100% Offline Vault',
+                      style: const TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xFF34D399),
+                        letterSpacing: 0.1,
+                      ),
                     ),
-                    child: const Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(Icons.trending_up_rounded, size: 14, color: Color(0xFF34D399)),
-                        SizedBox(width: 4),
-                        Text(
-                          '+12.4%',
-                          style: TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w700,
-                            color: Color(0xFF34D399),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  const Text(
-                    'vs bulan lalu',
-                    style: TextStyle(fontSize: 11, color: CashWiseColors.slate400),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ],
           ),
@@ -563,6 +556,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   // ─── TRANSACTIONS TAB ───
   Widget _buildTransactionsTab() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final subTabs = ['Daftar', 'Ringkasan'];
     final filtered = _txTypeFilter == 'ALL'
         ? _transactions
@@ -578,13 +572,23 @@ class _HomeScreenState extends State<HomeScreen> {
               final sel = _txSubTab == i;
               return Expanded(
                 child: GestureDetector(
-                  onTap: () => setState(() => _txSubTab = i),
+                  onTap: () {
+                    HapticFeedback.selectionClick();
+                    setState(() => _txSubTab = i);
+                  },
                   child: Container(
                     padding: const EdgeInsets.symmetric(vertical: 8),
                     margin: const EdgeInsets.symmetric(horizontal: 2),
                     decoration: BoxDecoration(
-                      color: sel ? CashWiseColors.indigo600 : CashWiseColors.slate100,
+                      color: sel
+                          ? (isDark ? CashWiseColors.darkPrimary : CashWiseColors.indigo600)
+                          : (isDark ? CashWiseColors.darkSurface : CashWiseColors.slate100),
                       borderRadius: BorderRadius.circular(8),
+                      border: Border.all(
+                        color: sel
+                            ? Colors.transparent
+                            : (isDark ? CashWiseColors.darkBorder : CashWiseColors.slate200),
+                      ),
                     ),
                     child: Center(
                       child: Text(
@@ -592,7 +596,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         style: TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.w700,
-                          color: sel ? CashWiseColors.pureWhite : CashWiseColors.slate600,
+                          color: sel ? Colors.white : (isDark ? CashWiseColors.darkTextMuted : CashWiseColors.slate600),
                         ),
                       ),
                     ),
@@ -625,14 +629,14 @@ class _HomeScreenState extends State<HomeScreen> {
           decoration: BoxDecoration(
             color: Theme.of(context).cardTheme.color ?? CashWiseColors.pureWhite,
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: CashWiseColors.slate200),
+            border: Border.all(color: isDark ? CashWiseColors.darkBorder : CashWiseColors.slate200),
           ),
           child: Row(
             children: [
-              _summaryCol('Pemasukan', '+${formatRupiah(_totalIncome)}', CashWiseColors.emerald600),
-              Container(width: 1, height: 32, color: CashWiseColors.slate200),
-              _summaryCol('Pengeluaran', '-${formatRupiah(_totalExpense)}', CashWiseColors.rose600),
-              Container(width: 1, height: 32, color: CashWiseColors.slate200),
+              _summaryCol('Pemasukan', '+${formatRupiah(_totalIncome)}', isDark ? CashWiseColors.darkIncome : CashWiseColors.emerald600),
+              Container(width: 1, height: 32, color: isDark ? CashWiseColors.darkBorder : CashWiseColors.slate200),
+              _summaryCol('Pengeluaran', '-${formatRupiah(_totalExpense)}', isDark ? CashWiseColors.darkExpense : CashWiseColors.rose600),
+              Container(width: 1, height: 32, color: isDark ? CashWiseColors.darkBorder : CashWiseColors.slate200),
               _summaryCol('Saldo', formatRupiah(_totalBalance), Theme.of(context).colorScheme.onSurface),
             ],
           ),
@@ -694,8 +698,9 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _filterChip(String type, String label, [Color? color]) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final sel = _txTypeFilter == type;
-    final activeColor = color ?? CashWiseColors.indigo600;
+    final activeColor = color ?? (isDark ? CashWiseColors.darkPrimary : CashWiseColors.indigo600);
     return GestureDetector(
       onTap: () {
         HapticFeedback.selectionClick();
@@ -704,10 +709,14 @@ class _HomeScreenState extends State<HomeScreen> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
         decoration: BoxDecoration(
-          color: sel ? activeColor.withValues(alpha: 0.15) : CashWiseColors.slate100,
+          color: sel
+              ? activeColor.withValues(alpha: isDark ? 0.25 : 0.15)
+              : (isDark ? CashWiseColors.darkSurface : CashWiseColors.slate100),
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: sel ? activeColor : CashWiseColors.slate200,
+            color: sel
+                ? activeColor
+                : (isDark ? CashWiseColors.darkBorder : CashWiseColors.slate200),
           ),
         ),
         child: Text(
@@ -715,7 +724,9 @@ class _HomeScreenState extends State<HomeScreen> {
           style: TextStyle(
             fontSize: 11,
             fontWeight: sel ? FontWeight.w700 : FontWeight.w500,
-            color: sel ? activeColor : CashWiseColors.slate600,
+            color: sel
+                ? activeColor
+                : (isDark ? CashWiseColors.darkTextMuted : CashWiseColors.slate600),
           ),
         ),
       ),
@@ -723,10 +734,11 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _summaryCol(String label, String value, Color color) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Expanded(
       child: Column(
         children: [
-          Text(label, style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w600, color: CashWiseColors.slate500)),
+          Text(label, style: TextStyle(fontSize: 10, fontWeight: FontWeight.w600, color: isDark ? CashWiseColors.darkTextMuted : CashWiseColors.slate500)),
           const SizedBox(height: 2),
           FittedBox(
             child: Text(value, style: TextStyle(fontWeight: FontWeight.w700, fontFamily: 'monospace', color: color, fontSize: 13)),
@@ -737,6 +749,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _txTile(Map<String, dynamic> tx) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final type = tx['type'] as String;
     final amount = (tx['amount'] as num).toDouble();
     final isExpense = type == 'EXPENSE';
@@ -744,6 +757,27 @@ class _HomeScreenState extends State<HomeScreen> {
     final note = tx['note'] as String? ?? '';
     final dateStr = tx['date'] as String? ?? '';
     final catId = tx['categoryId'] as String?;
+
+    Color iconBg;
+    if (isDark) {
+      iconBg = isTransfer
+          ? CashWiseColors.darkSurfaceSubtle
+          : isExpense
+              ? const Color(0xFF38141B)
+              : const Color(0xFF064E3B);
+    } else {
+      iconBg = isTransfer
+          ? CashWiseColors.indigo50
+          : isExpense
+              ? CashWiseColors.rose50
+              : CashWiseColors.emerald50;
+    }
+
+    final amountColor = isExpense
+        ? (isDark ? CashWiseColors.darkExpense : CashWiseColors.rose600)
+        : isTransfer
+            ? (isDark ? CashWiseColors.darkPrimary : CashWiseColors.blue600)
+            : (isDark ? CashWiseColors.darkIncome : CashWiseColors.emerald600);
 
     return Card(
       margin: const EdgeInsets.only(bottom: 8),
@@ -755,14 +789,14 @@ class _HomeScreenState extends State<HomeScreen> {
           child: Row(
             children: [
               Container(
-                width: 40, height: 40,
+                width: 40,
+                height: 40,
                 decoration: BoxDecoration(
-                  color: isTransfer
-                      ? CashWiseColors.indigo50
-                      : isExpense
-                          ? CashWiseColors.rose50
-                          : CashWiseColors.emerald50,
+                  color: iconBg,
                   borderRadius: BorderRadius.circular(10),
+                  border: Border.all(
+                    color: isDark ? CashWiseColors.darkBorder : Colors.transparent,
+                  ),
                 ),
                 child: Center(
                   child: Text(
@@ -778,21 +812,33 @@ class _HomeScreenState extends State<HomeScreen> {
                   children: [
                     Text(
                       note.isNotEmpty ? note : (isTransfer ? 'Transfer' : _catName(catId)),
-                      style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14, color: CashWiseColors.slate900),
-                      maxLines: 1, overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontWeight: FontWeight.w700,
+                        fontSize: 14,
+                        color: isDark ? CashWiseColors.darkText : CashWiseColors.slate900,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
                     const SizedBox(height: 2),
                     Text(
                       isTransfer
                           ? '${_accName(tx['accountId'])} → ${_accName(tx['toAccountId'])}'
                           : '${_catIcon(catId)} ${_catName(catId)} · ${_accName(tx['accountId'])}',
-                      style: const TextStyle(fontSize: 11, color: CashWiseColors.slate500),
-                      maxLines: 1, overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: isDark ? CashWiseColors.darkTextMuted : CashWiseColors.slate500,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
                     if (dateStr.isNotEmpty)
                       Text(
                         dateStr.length >= 10 ? dateStr.substring(0, 10) : dateStr,
-                        style: const TextStyle(fontSize: 10, color: CashWiseColors.slate400),
+                        style: TextStyle(
+                          fontSize: 10,
+                          color: isDark ? CashWiseColors.slate500 : CashWiseColors.slate400,
+                        ),
                       ),
                   ],
                 ),
@@ -807,7 +853,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       fontWeight: FontWeight.w700,
                       fontFamily: 'monospace',
                       fontSize: 13,
-                      color: isExpense ? CashWiseColors.rose600 : isTransfer ? CashWiseColors.blue600 : CashWiseColors.emerald600,
+                      color: amountColor,
                     ),
                   ),
                   const SizedBox(height: 4),
@@ -817,9 +863,14 @@ class _HomeScreenState extends State<HomeScreen> {
                       await _reload();
                     }),
                     borderRadius: BorderRadius.circular(4),
-                    child: const Padding(
-                      padding: EdgeInsets.all(4),
-                      child: Icon(Icons.delete_outline_rounded, size: 16, color: CashWiseColors.slate400),
+                    child: Container(
+                      constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+                      alignment: Alignment.center,
+                      child: const Icon(
+                        Icons.delete_outline_rounded,
+                        size: 16,
+                        color: CashWiseColors.slate400,
+                      ),
                     ),
                   ),
                 ],
@@ -898,6 +949,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   // ─── ACCOUNTS TAB ───
   Widget _buildAccountsTab() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final grouped = <String, List<Map<String, dynamic>>>{};
     for (final a in _accounts) {
       final g = a['group'] as String? ?? 'Accounts';
@@ -929,9 +981,25 @@ class _HomeScreenState extends State<HomeScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('TOTAL SALDO', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: CashWiseColors.slate500, letterSpacing: 0.5)),
+                Text(
+                  'TOTAL SALDO',
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w700,
+                    color: isDark ? CashWiseColors.darkTextMuted : CashWiseColors.slate500,
+                    letterSpacing: 0.5,
+                  ),
+                ),
                 const SizedBox(height: 4),
-                Text(formatRupiah(_totalBalance), style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w700, fontFamily: 'monospace', color: CashWiseColors.slate900)),
+                Text(
+                  formatRupiah(_totalBalance),
+                  style: TextStyle(
+                    fontSize: 28,
+                    fontWeight: FontWeight.w700,
+                    fontFamily: 'monospace',
+                    color: isDark ? CashWiseColors.darkText : CashWiseColors.slate900,
+                  ),
+                ),
               ],
             ),
           ),
@@ -964,18 +1032,26 @@ class _HomeScreenState extends State<HomeScreen> {
                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                     child: Row(
                       children: [
-                        Icon(_groupIcon(grpKey), size: 18, color: CashWiseColors.slate600),
+                        Icon(_groupIcon(grpKey), size: 18, color: isDark ? CashWiseColors.darkTextMuted : CashWiseColors.slate600),
                         const SizedBox(width: 10),
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(grpKey, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14)),
-                              Text('${list.length} akun', style: const TextStyle(fontSize: 11, color: CashWiseColors.slate500)),
+                              Text('${list.length} akun', style: TextStyle(fontSize: 11, color: isDark ? CashWiseColors.darkTextMuted : CashWiseColors.slate500)),
                             ],
                           ),
                         ),
-                        Text(formatRupiah(groupTotal), style: const TextStyle(fontWeight: FontWeight.w700, fontFamily: 'monospace', fontSize: 13, color: CashWiseColors.slate900)),
+                        Text(
+                          formatRupiah(groupTotal),
+                          style: TextStyle(
+                            fontWeight: FontWeight.w700,
+                            fontFamily: 'monospace',
+                            fontSize: 13,
+                            color: isDark ? CashWiseColors.darkText : CashWiseColors.slate900,
+                          ),
+                        ),
                         const SizedBox(width: 8),
                         Icon(hidden ? Icons.visibility_off_rounded : Icons.visibility_rounded, size: 18, color: CashWiseColors.slate400),
                       ],
@@ -995,7 +1071,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             Container(
                               width: 36, height: 36,
                               decoration: BoxDecoration(
-                                color: CashWiseColors.slate100,
+                                color: isDark ? CashWiseColors.darkSurfaceSubtle : CashWiseColors.slate100,
                                 borderRadius: BorderRadius.circular(8),
                               ),
                               child: Center(child: Text(acc['icon'] ?? '💳', style: const TextStyle(fontSize: 18))),
@@ -1007,7 +1083,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 children: [
                                   Text(acc['name'] ?? '', style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13)),
                                   if ((acc['description'] ?? '').toString().isNotEmpty)
-                                    Text(acc['description'], style: const TextStyle(fontSize: 11, color: CashWiseColors.slate500)),
+                                    Text(acc['description'], style: TextStyle(fontSize: 11, color: isDark ? CashWiseColors.darkTextMuted : CashWiseColors.slate500)),
                                 ],
                               ),
                             ),
@@ -1252,7 +1328,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         decoration: BoxDecoration(
                           color: Theme.of(context).cardTheme.color,
                           borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: CashWiseColors.slate200),
+                          border: Border.all(color: isDark ? CashWiseColors.darkBorder : CashWiseColors.slate200),
                         ),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -1260,14 +1336,14 @@ class _HomeScreenState extends State<HomeScreen> {
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                const Text('Live Preview', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: CashWiseColors.slate500)),
+                                Text('Live Preview', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: isDark ? CashWiseColors.darkTextMuted : CashWiseColors.slate500)),
                                 Container(
                                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                                   decoration: BoxDecoration(
-                                    color: CashWiseColors.emerald50,
+                                    color: isDark ? const Color(0xFF064E3B) : CashWiseColors.emerald50,
                                     borderRadius: BorderRadius.circular(6),
                                   ),
-                                  child: const Text('WCAG AA Pass', style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: CashWiseColors.emerald600)),
+                                  child: Text('WCAG AA Pass', style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: isDark ? CashWiseColors.darkIncome : CashWiseColors.emerald600)),
                                 ),
                               ],
                             ),
@@ -1278,7 +1354,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               decoration: BoxDecoration(
                                 color: pBg,
                                 borderRadius: BorderRadius.circular(10),
-                                border: Border.all(color: CashWiseColors.slate200),
+                                border: Border.all(color: isDark ? CashWiseColors.darkBorder : CashWiseColors.slate200),
                               ),
                               child: Column(
                                 children: [
@@ -1309,7 +1385,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                             const Text('CashWise', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700)),
                                           ],
                                         ),
-                                        const Text('+ Add', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: CashWiseColors.indigo600)),
+                                        Text('+ Add', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: isDark ? CashWiseColors.darkPrimary : CashWiseColors.indigo600)),
                                       ],
                                     ),
                                   ),
@@ -1320,7 +1396,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                     decoration: BoxDecoration(
                                       color: cBg,
                                       borderRadius: BorderRadius.circular(8),
-                                      border: Border.all(color: CashWiseColors.slate200),
+                                      border: Border.all(color: isDark ? CashWiseColors.darkBorder : CashWiseColors.slate200),
                                     ),
                                     child: Row(
                                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -1328,14 +1404,33 @@ class _HomeScreenState extends State<HomeScreen> {
                                         Column(
                                           crossAxisAlignment: CrossAxisAlignment.start,
                                           children: [
-                                            const Text('Net Worth', style: TextStyle(fontSize: 10, color: CashWiseColors.slate500)),
+                                            Text('Net Worth', style: TextStyle(fontSize: 10, color: isDark ? CashWiseColors.darkTextMuted : CashWiseColors.slate500)),
                                             Text(
                                               formatRupiah(_totalBalance),
-                                              style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w800, fontFamily: 'monospace'),
+                                              style: TextStyle(
+                                                fontSize: 13,
+                                                fontWeight: FontWeight.w800,
+                                                fontFamily: 'monospace',
+                                                color: isDark ? CashWiseColors.darkText : CashWiseColors.slate900,
+                                              ),
                                             ),
                                           ],
                                         ),
-                                        const Text('+7.7%', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: CashWiseColors.emerald600)),
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                          decoration: BoxDecoration(
+                                            color: isDark ? const Color(0xFF064E3B) : CashWiseColors.emerald50,
+                                            borderRadius: BorderRadius.circular(4),
+                                          ),
+                                          child: Text(
+                                            '100% Lokal',
+                                            style: TextStyle(
+                                              fontSize: 10,
+                                              fontWeight: FontWeight.w700,
+                                              color: isDark ? CashWiseColors.darkIncome : CashWiseColors.emerald600,
+                                            ),
+                                          ),
+                                        ),
                                       ],
                                     ),
                                   ),
@@ -1348,7 +1443,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       const SizedBox(height: 16),
 
                       // Presets Horizontal Scroll
-                      const Text('Presets', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: CashWiseColors.slate600)),
+                      Text('Presets', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: isDark ? CashWiseColors.darkTextMuted : CashWiseColors.slate600)),
                       const SizedBox(height: 8),
                       SizedBox(
                         height: 36,
@@ -1563,6 +1658,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   // ─── STATS TAB ───
   Widget _buildStatsTab() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final ranges = ['1H', '1M', '1B', '3B', '1T'];
     final rangeLabels = ['Hari Ini', 'Minggu Ini', 'Bulan Ini', '3 Bulan', '1 Tahun'];
     final now = DateTime.now();
@@ -1598,16 +1694,33 @@ class _HomeScreenState extends State<HomeScreen> {
             final sel = _statsRange == i;
             return Expanded(
               child: GestureDetector(
-                onTap: () => setState(() => _statsRange = i),
+                onTap: () {
+                  HapticFeedback.selectionClick();
+                  setState(() => _statsRange = i);
+                },
                 child: Container(
                   margin: const EdgeInsets.symmetric(horizontal: 2),
                   padding: const EdgeInsets.symmetric(vertical: 10),
                   decoration: BoxDecoration(
-                    color: sel ? CashWiseColors.indigo600 : CashWiseColors.slate100,
+                    color: sel
+                        ? (isDark ? CashWiseColors.darkPrimary : CashWiseColors.indigo600)
+                        : (isDark ? CashWiseColors.darkSurface : CashWiseColors.slate100),
                     borderRadius: BorderRadius.circular(8),
+                    border: Border.all(
+                      color: sel
+                          ? Colors.transparent
+                          : (isDark ? CashWiseColors.darkBorder : CashWiseColors.slate200),
+                    ),
                   ),
                   child: Center(
-                    child: Text(ranges[i], style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13, color: sel ? CashWiseColors.pureWhite : CashWiseColors.slate700)),
+                    child: Text(
+                      ranges[i],
+                      style: TextStyle(
+                        fontWeight: FontWeight.w700,
+                        fontSize: 13,
+                        color: sel ? Colors.white : (isDark ? CashWiseColors.darkTextMuted : CashWiseColors.slate700),
+                      ),
+                    ),
                   ),
                 ),
               ),
@@ -1615,7 +1728,7 @@ class _HomeScreenState extends State<HomeScreen> {
           }),
         ),
         const SizedBox(height: 6),
-        Center(child: Text(rangeLabels[_statsRange], style: const TextStyle(fontSize: 12, color: CashWiseColors.slate500))),
+        Center(child: Text(rangeLabels[_statsRange], style: TextStyle(fontSize: 12, color: isDark ? CashWiseColors.darkTextMuted : CashWiseColors.slate500))),
         const SizedBox(height: 16),
         Row(
           children: [
@@ -1626,9 +1739,19 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text('Pemasukan', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: CashWiseColors.slate500)),
+                      Text('Pemasukan', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: isDark ? CashWiseColors.darkTextMuted : CashWiseColors.slate500)),
                       const SizedBox(height: 4),
-                      FittedBox(child: Text('+${formatRupiah(income)}', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700, fontFamily: 'monospace', color: CashWiseColors.emerald600))),
+                      FittedBox(
+                        child: Text(
+                          '+${formatRupiah(income)}',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w700,
+                            fontFamily: 'monospace',
+                            color: isDark ? CashWiseColors.darkIncome : CashWiseColors.emerald600,
+                          ),
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -1642,9 +1765,19 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text('Pengeluaran', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: CashWiseColors.slate500)),
+                      Text('Pengeluaran', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: isDark ? CashWiseColors.darkTextMuted : CashWiseColors.slate500)),
                       const SizedBox(height: 4),
-                      FittedBox(child: Text('-${formatRupiah(expense)}', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700, fontFamily: 'monospace', color: CashWiseColors.rose600))),
+                      FittedBox(
+                        child: Text(
+                          '-${formatRupiah(expense)}',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w700,
+                            fontFamily: 'monospace',
+                            color: isDark ? CashWiseColors.darkExpense : CashWiseColors.rose600,
+                          ),
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -1659,10 +1792,17 @@ class _HomeScreenState extends State<HomeScreen> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text('Selisih Bersih', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: CashWiseColors.slate700)),
+                Text('Selisih Bersih', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: isDark ? CashWiseColors.darkTextMuted : CashWiseColors.slate700)),
                 Text(
                   formatRupiah(income - expense),
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700, fontFamily: 'monospace', color: (income - expense) >= 0 ? CashWiseColors.emerald600 : CashWiseColors.rose600),
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w700,
+                    fontFamily: 'monospace',
+                    color: (income - expense) >= 0
+                        ? (isDark ? CashWiseColors.darkIncome : CashWiseColors.emerald600)
+                        : (isDark ? CashWiseColors.darkExpense : CashWiseColors.rose600),
+                  ),
                 ),
               ],
             ),
@@ -1676,6 +1816,7 @@ class _HomeScreenState extends State<HomeScreen> {
 }
 
   Widget _buildStatsBreakdown(List<Map<String, dynamic>> filtered) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final exp = <String, double>{};
     for (final t in filtered) {
       if (t['type'] == 'EXPENSE' && t['categoryId'] != null) {
@@ -1716,12 +1857,24 @@ class _HomeScreenState extends State<HomeScreen> {
                       const SizedBox(height: 4),
                       ClipRRect(
                         borderRadius: BorderRadius.circular(4),
-                        child: LinearProgressIndicator(value: ratio, minHeight: 6, color: CashWiseColors.rose600, backgroundColor: CashWiseColors.slate100),
+                        child: LinearProgressIndicator(
+                          value: ratio,
+                          minHeight: 6,
+                          color: isDark ? CashWiseColors.darkExpense : CashWiseColors.rose600,
+                          backgroundColor: isDark ? CashWiseColors.darkSurfaceSubtle : CashWiseColors.slate100,
+                        ),
                       ),
                       const SizedBox(height: 2),
                       Align(
                         alignment: Alignment.centerRight,
-                        child: Text(formatRupiah(e.value), style: const TextStyle(fontSize: 11, fontFamily: 'monospace', color: CashWiseColors.slate600)),
+                        child: Text(
+                          formatRupiah(e.value),
+                          style: TextStyle(
+                            fontSize: 11,
+                            fontFamily: 'monospace',
+                            color: isDark ? CashWiseColors.darkTextMuted : CashWiseColors.slate600,
+                          ),
+                        ),
                       ),
                     ],
                   ),
@@ -1753,6 +1906,7 @@ class _HomeScreenState extends State<HomeScreen> {
       isScrollControlled: true,
       builder: (ctx) {
         return StatefulBuilder(builder: (ctx, setLocal) {
+          final isDark = Theme.of(ctx).brightness == Brightness.dark;
           final relevantCats = _categories.where((c) => c['type'] == type).toList();
           return Padding(
             padding: EdgeInsets.only(bottom: MediaQuery.of(ctx).viewInsets.bottom + 16, left: 16, right: 16, top: 16),
@@ -1787,11 +1941,24 @@ class _HomeScreenState extends State<HomeScreen> {
                             margin: const EdgeInsets.symmetric(horizontal: 2),
                             padding: const EdgeInsets.symmetric(vertical: 10),
                             decoration: BoxDecoration(
-                              color: sel ? color.withValues(alpha: 0.1) : CashWiseColors.slate100,
-                              border: Border.all(color: sel ? color : CashWiseColors.slate200),
+                              color: sel
+                                  ? color.withValues(alpha: isDark ? 0.25 : 0.1)
+                                  : (isDark ? CashWiseColors.darkSurfaceSubtle : CashWiseColors.slate100),
+                              border: Border.all(
+                                color: sel ? color : (isDark ? CashWiseColors.darkBorder : CashWiseColors.slate200),
+                              ),
                               borderRadius: BorderRadius.circular(8),
                             ),
-                            child: Center(child: Text(label, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: sel ? color : CashWiseColors.slate600))),
+                            child: Center(
+                              child: Text(
+                                label,
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w700,
+                                  color: sel ? color : (isDark ? CashWiseColors.darkTextMuted : CashWiseColors.slate600),
+                                ),
+                              ),
+                            ),
                           ),
                         ),
                       );
@@ -1973,6 +2140,7 @@ class _HomeScreenState extends State<HomeScreen> {
       isScrollControlled: true,
       builder: (ctx) {
         return StatefulBuilder(builder: (ctx, setLocal) {
+          final isDark = Theme.of(ctx).brightness == Brightness.dark;
           return Padding(
             padding: EdgeInsets.only(bottom: MediaQuery.of(ctx).viewInsets.bottom + 16, left: 16, right: 16, top: 16),
             child: SingleChildScrollView(
@@ -2000,11 +2168,24 @@ class _HomeScreenState extends State<HomeScreen> {
                             margin: const EdgeInsets.symmetric(horizontal: 2),
                             padding: const EdgeInsets.symmetric(vertical: 10),
                             decoration: BoxDecoration(
-                              color: sel ? color.withValues(alpha: 0.1) : CashWiseColors.slate100,
-                              border: Border.all(color: sel ? color : CashWiseColors.slate200),
+                              color: sel
+                                  ? color.withValues(alpha: isDark ? 0.25 : 0.1)
+                                  : (isDark ? CashWiseColors.darkSurfaceSubtle : CashWiseColors.slate100),
+                              border: Border.all(
+                                color: sel ? color : (isDark ? CashWiseColors.darkBorder : CashWiseColors.slate200),
+                              ),
                               borderRadius: BorderRadius.circular(8),
                             ),
-                            child: Center(child: Text(label, style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: sel ? color : CashWiseColors.slate600))),
+                            child: Center(
+                              child: Text(
+                                label,
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w700,
+                                  color: sel ? color : (isDark ? CashWiseColors.darkTextMuted : CashWiseColors.slate600),
+                                ),
+                              ),
+                            ),
                           ),
                         ),
                       );
@@ -2013,16 +2194,24 @@ class _HomeScreenState extends State<HomeScreen> {
                   const SizedBox(height: 14),
                   TextField(controller: nameCtl, decoration: const InputDecoration(labelText: 'Nama Kategori')),
                   const SizedBox(height: 14),
-                  const Text('Pilih Ikon', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: CashWiseColors.slate700)),
+                  Text(
+                    'Pilih Ikon',
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
+                      color: isDark ? CashWiseColors.darkTextMuted : CashWiseColors.slate700,
+                    ),
+                  ),
                   const SizedBox(height: 8),
                   Row(
                     children: [
                       Container(
-                        width: 48, height: 48,
+                        width: 48,
+                        height: 48,
                         decoration: BoxDecoration(
-                          color: CashWiseColors.slate100,
+                          color: isDark ? CashWiseColors.darkSurfaceSubtle : CashWiseColors.slate100,
                           borderRadius: BorderRadius.circular(10),
-                          border: Border.all(color: CashWiseColors.slate200),
+                          border: Border.all(color: isDark ? CashWiseColors.darkBorder : CashWiseColors.slate200),
                         ),
                         child: Center(child: Text(icon, style: const TextStyle(fontSize: 24))),
                       ),
@@ -2042,9 +2231,9 @@ class _HomeScreenState extends State<HomeScreen> {
                   Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: CashWiseColors.slate50,
+                      color: isDark ? CashWiseColors.darkSurfaceSubtle : CashWiseColors.slate50,
                       borderRadius: BorderRadius.circular(10),
-                      border: Border.all(color: CashWiseColors.slate200),
+                      border: Border.all(color: isDark ? CashWiseColors.darkBorder : CashWiseColors.slate200),
                     ),
                     child: Wrap(
                       spacing: 6,
@@ -2052,10 +2241,15 @@ class _HomeScreenState extends State<HomeScreen> {
                       children: _presetEmojis.map((e) => GestureDetector(
                         onTap: () => setLocal(() => icon = e),
                         child: Container(
-                          width: 36, height: 36,
+                          width: 36,
+                          height: 36,
                           decoration: BoxDecoration(
-                            color: icon == e ? CashWiseColors.indigo50 : Colors.transparent,
-                            border: icon == e ? Border.all(color: CashWiseColors.indigo600, width: 2) : null,
+                            color: icon == e
+                                ? (isDark ? CashWiseColors.darkPrimary.withValues(alpha: 0.25) : CashWiseColors.indigo50)
+                                : Colors.transparent,
+                            border: icon == e
+                                ? Border.all(color: isDark ? CashWiseColors.darkPrimary : CashWiseColors.indigo600, width: 2)
+                                : null,
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: Center(child: Text(e, style: const TextStyle(fontSize: 18))),
