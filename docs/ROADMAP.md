@@ -65,11 +65,11 @@ Roadmap ini merinci implementasi bertahap dari awal hingga siap produksi sesuai 
 - [x] **Slice 6:** Dashboard Analitik & Laporan Arus Kas (Net Worth Card, Pemasukan vs Pengeluaran).
 - [x] **Slice 7:** Ekspor Data Transaksi (CSV & JSON).
 - [x] **Slice 8:** Sinkronisasi Hybrid Background Worker & Queue Processing (Bidirectional Delta Sync & LWW Conflict Resolution).
-- [ ] **Slice 9:** Polish UI/UX, Haptic Feedback & Offline Resilience.
+- [x] **Slice 9:** Polish UI/UX, Haptic Feedback & Offline Resilience (Pull-to-refresh, haptics, online/offline detection, empty states).
 
 ---
 
-## 📌 Tahap 8 – Testing, Security & Quality Assurance
+## 📌 Tahap 8 – Testing, Security & Quality Assurance (Status: BERIKUTNYA ⏳)
 - [ ] Pengujian skenario offline, transisi offline-ke-online, pengujian multi-perangkat.
 - [ ] Audit kode dengan Ponytail dan Anti-Slop checklist.
 

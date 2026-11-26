@@ -89,6 +89,15 @@ export default function CashWiseApp() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [syncStatus, setSyncStatus] = useState<SyncState>('IDLE');
+  const [isOnline, setIsOnline] = useState(true);
+  const [toast, setToast] = useState<{ message: string; type?: 'success' | 'info' | 'error' } | null>(null);
+
+  function showToast(message: string, type: 'success' | 'info' | 'error' = 'success') {
+    setToast({ message, type });
+    setTimeout(() => {
+      setToast((prev) => (prev?.message === message ? null : prev));
+    }, 3200);
+  }
 
   // Modal State for Quick Add Transaction
   const [isTxModalOpen, setIsTxModalOpen] = useState(false);
@@ -238,12 +247,29 @@ export default function CashWiseApp() {
     };
     window.addEventListener('cashwise:data-changed', handleDataChanged);
 
+    const handleOnline = () => {
+      setIsOnline(true);
+      showToast('Koneksi internet pulih. Melakukan sinkronisasi cloud...', 'info');
+      runWebSync().then(() => loadData());
+    };
+    const handleOffline = () => {
+      setIsOnline(false);
+    };
+
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+    if (typeof navigator !== 'undefined') {
+      setIsOnline(navigator.onLine);
+    }
+
     // Initial background sync
     runWebSync().then(() => loadData());
 
     return () => {
       unsubscribe();
       window.removeEventListener('cashwise:data-changed', handleDataChanged);
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
     };
   }, []);
 
@@ -270,6 +296,7 @@ export default function CashWiseApp() {
     });
     await loadData();
     runWebSync();
+    showToast('Transaksi berhasil dicatat');
   }
 
   async function handleUpdateTransaction(
@@ -288,6 +315,7 @@ export default function CashWiseApp() {
     await storage.updateTransaction(id, data);
     await loadData();
     runWebSync();
+    showToast('Transaksi berhasil diperbarui');
   }
 
   async function handleDeleteTransaction(id: string) {
@@ -296,6 +324,7 @@ export default function CashWiseApp() {
     await storage.deleteTransaction(id);
     await loadData();
     runWebSync();
+    showToast('Transaksi berhasil dihapus');
   }
 
   // Account Handlers
@@ -321,6 +350,7 @@ export default function CashWiseApp() {
     });
     await loadData();
     runWebSync();
+    showToast('Akun baru berhasil dibuat');
   }
 
   async function handleUpdateAccount(
@@ -336,6 +366,7 @@ export default function CashWiseApp() {
     await storage.updateAccount(id, data);
     await loadData();
     runWebSync();
+    showToast('Akun berhasil diperbarui');
   }
 
   async function handleDeleteAccount(id: string) {
@@ -344,6 +375,7 @@ export default function CashWiseApp() {
     await storage.deleteAccount(id);
     await loadData();
     runWebSync();
+    showToast('Akun berhasil dihapus');
   }
 
   async function handleMoveAccountToTop(id: string) {
@@ -351,6 +383,7 @@ export default function CashWiseApp() {
     await storage.moveAccountToTop(id);
     await loadData();
     runWebSync();
+    showToast('Prioritas akun berhasil diperbarui');
   }
 
   async function handleToggleGroupHidden(group: string, isHidden: boolean) {
@@ -378,6 +411,7 @@ export default function CashWiseApp() {
     });
     await loadData();
     runWebSync();
+    showToast('Kategori baru berhasil ditambahkan');
   }
 
   async function handleUpdateCategory(
@@ -393,6 +427,7 @@ export default function CashWiseApp() {
     await storage.updateCategory(id, data);
     await loadData();
     runWebSync();
+    showToast('Kategori berhasil diperbarui');
   }
 
   async function handleDeleteCategory(id: string) {
@@ -401,6 +436,7 @@ export default function CashWiseApp() {
     await storage.deleteCategory(id);
     await loadData();
     runWebSync();
+    showToast('Kategori berhasil dihapus');
   }
 
   // Quick Modal Submit
@@ -463,6 +499,7 @@ export default function CashWiseApp() {
       a.download = `cashwise_transactions_${new Date().toISOString().split('T')[0]}.csv`;
       a.click();
     }
+    showToast(`Data berhasil diekspor (${format.toUpperCase()})`);
   }
 
   // --- AGGREGATIONS & METRICS ---
@@ -727,6 +764,18 @@ export default function CashWiseApp() {
 
       {/* ─── MAIN WORKSPACE ─── */}
       <div className="flex-1 min-w-0 flex flex-col">
+        {/* Offline Resilience Banner */}
+        {!isOnline && (
+          <div className="bg-amber-500/10 border-b border-amber-500/20 px-xl py-2 flex items-center justify-between text-xs text-amber-700 dark:text-amber-400">
+            <div className="flex items-center gap-2">
+              <span className="material-symbols-outlined text-[16px]">cloud_off</span>
+              <span className="font-semibold">Mode Offline Aktif</span>
+              <span>— Catatan keuangan tersimpan aman di IndexedDB browser dan otomatis tersinkron saat internet pulih.</span>
+            </div>
+            <span className="font-mono text-[10px] px-2 py-0.5 rounded bg-amber-500/20 font-bold uppercase tracking-wider">Local-First</span>
+          </div>
+        )}
+
         {/* Top Header */}
         <header className="sticky top-0 z-20 bg-light-surface dark:bg-dark-surface border-b border-light-border dark:border-dark-border px-xl py-md flex flex-wrap items-center justify-between gap-md">
           <div className="flex flex-col">
@@ -1744,6 +1793,18 @@ export default function CashWiseApp() {
               </footer>
             </form>
           </div>
+        </div>
+      )}
+      {/* Toast Notification */}
+      {toast && (
+        <div className="fixed bottom-6 right-6 z-50 flex items-center gap-2.5 px-4 py-3 rounded-xl bg-slate-900 text-white shadow-2xl border border-slate-800 text-sm font-semibold animate-fade-in">
+          <span className={`material-symbols-outlined text-[18px] ${toast.type === 'error' ? 'text-rose-400' : toast.type === 'info' ? 'text-indigo-400' : 'text-emerald-400'}`}>
+            {toast.type === 'error' ? 'error' : toast.type === 'info' ? 'info' : 'check_circle'}
+          </span>
+          <span>{toast.message}</span>
+          <button onClick={() => setToast(null)} className="ml-2 text-slate-400 hover:text-white transition-colors">
+            <span className="material-symbols-outlined text-[16px]">close</span>
+          </button>
         </div>
       )}
     </div>

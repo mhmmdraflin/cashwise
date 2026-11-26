@@ -72,7 +72,7 @@ cashwise/
 4. **Tahap 4 – Arsitektur dan Database** *(Status: Selesai ✅)*
 5. **Tahap 5 – UI/UX dan Design System (Anti-Slop)** *(Status: Selesai ✅)*
 6. **Tahap 6 – Workspace dan Context Engineering** *(Status: Selesai ✅)*
-7. **Tahap 7 – Development (Vertical Slicing: Slices 1–9)** *(Status: Slices 1–8 Selesai ✅ | Slice 9 In Progress 🚀)*
+7. **Tahap 7 – Development (Vertical Slicing: Slices 1–9)** *(Status: SELESAI 100% ✅)*
    - [x] **Slice 1:** Scaffolding Web (Next.js App Router) & Mobile (Flutter) dengan local storage.
    - [x] **Slice 2:** Manajemen Akun / Kantong Keuangan (Saldo real-time, grouping, reorder priority).
    - [x] **Slice 3:** Pencatatan Transaksi Kilat (Pengeluaran, Pemasukan, Transfer antar-kantong).
@@ -81,8 +81,8 @@ cashwise/
    - [x] **Slice 6:** Dashboard Analitik & Laporan Arus Kas (Net Worth Card, Income vs Expense).
    - [x] **Slice 7:** Ekspor Data Transaksi (CSV & JSON).
    - [x] **Slice 8:** Sinkronisasi Hybrid Cloud Engine (Bidirectional Delta Sync, `sync_queue`, LWW Conflict Resolution).
-   - [ ] **Slice 9:** Polish UI/UX, Haptic Feedback & Offline Resilience.
-8. **Tahap 8 – Testing, Security & Quality Assurance**
+   - [x] **Slice 9:** Polish UI/UX, Haptic Feedback & Offline Resilience (Pull-to-refresh, haptic feedback, online/offline detection, empty states).
+8. **Tahap 8 – Testing, Security & Quality Assurance** *(Status: BERIKUTNYA ⏳)*
 9. **Tahap 9 – Deployment dan Release (Vercel & Android APK/AAB)**
 10. **Tahap 10 – Final Review dan Handover**
 

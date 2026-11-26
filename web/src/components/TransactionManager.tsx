@@ -219,8 +219,14 @@ export function TransactionManager({
 
     if (sortedDays.length === 0) {
       return (
-        <div className="bg-white border border-slate-200 rounded-xl p-8 text-center shadow-card">
-          <p className="text-sm text-slate-500">Belum ada transaksi pada daftar harian.</p>
+        <div className="bg-white border border-slate-200 rounded-xl p-12 text-center shadow-card flex flex-col items-center">
+          <div className="w-12 h-12 rounded-xl bg-slate-100 flex items-center justify-center text-slate-400 mb-3">
+            <List className="w-6 h-6" />
+          </div>
+          <h4 className="text-base font-bold text-slate-800">Belum Ada Transaksi Harian</h4>
+          <p className="text-sm text-slate-500 mt-1 max-w-sm">
+            Klik tombol "Tambah Transaksi" di atas untuk mulai mencatat arus kas pemasukan dan pengeluaran Anda.
+          </p>
         </div>
       );
     }
@@ -428,8 +434,14 @@ export function TransactionManager({
 
     if (sortedMonths.length === 0) {
       return (
-        <div className="bg-white border border-slate-200 rounded-xl p-8 text-center shadow-card">
-          <p className="text-sm text-slate-500">Belum ada transaksi pada daftar bulanan.</p>
+        <div className="bg-white border border-slate-200 rounded-xl p-12 text-center shadow-card flex flex-col items-center">
+          <div className="w-12 h-12 rounded-xl bg-slate-100 flex items-center justify-center text-slate-400 mb-3">
+            <Layers className="w-6 h-6" />
+          </div>
+          <h4 className="text-base font-bold text-slate-800">Belum Ada Transaksi Bulanan</h4>
+          <p className="text-sm text-slate-500 mt-1 max-w-sm">
+            Transaksi yang dicatat akan dikelompokkan otomatis berdasarkan bulan di tampilan ini.
+          </p>
         </div>
       );
     }

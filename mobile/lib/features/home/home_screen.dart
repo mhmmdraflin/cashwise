@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:cashwise_mobile/core/theme.dart';
 import 'package:cashwise_mobile/core/repository.dart';
@@ -227,7 +228,10 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         child: NavigationBar(
           selectedIndex: _currentTab,
-          onDestinationSelected: (i) => setState(() => _currentTab = i),
+          onDestinationSelected: (i) {
+            HapticFeedback.selectionClick();
+            setState(() => _currentTab = i);
+          },
           destinations: const [
             NavigationDestination(icon: Icon(Icons.home_rounded), label: 'Home'),
             NavigationDestination(icon: Icon(Icons.receipt_long_rounded), label: 'Transaksi'),
@@ -237,7 +241,10 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
       ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => _showTransactionForm(context),
+        onPressed: () {
+          HapticFeedback.mediumImpact();
+          _showTransactionForm(context);
+        },
         icon: const Icon(Icons.add_rounded),
         label: const Text('Catat', style: TextStyle(fontWeight: FontWeight.w700)),
       ),
@@ -249,9 +256,15 @@ class _HomeScreenState extends State<HomeScreen> {
     final recentTx = _transactions.take(5).toList();
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    return ListView(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      children: [
+    return RefreshIndicator(
+      onRefresh: () async {
+        await _reload();
+        HapticFeedback.lightImpact();
+      },
+      child: ListView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        children: [
         // Total Net Worth Card
         Container(
           padding: const EdgeInsets.all(20),
@@ -544,8 +557,9 @@ class _HomeScreenState extends State<HomeScreen> {
           ...recentTx.map((tx) => _txTile(tx)),
         const SizedBox(height: 70),
       ],
-    );
-  }
+    ),
+  );
+}
 
   // ─── TRANSACTIONS TAB ───
   Widget _buildTransactionsTab() {
@@ -624,26 +638,56 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ),
         Expanded(
-          child: _txSubTab == 1
-              ? _buildSummarySubView()
-              : filtered.isEmpty
-                  ? const Center(
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
+          child: RefreshIndicator(
+            onRefresh: () async {
+              await _reload();
+              HapticFeedback.lightImpact();
+            },
+            child: _txSubTab == 1
+                ? _buildSummarySubView()
+                : filtered.isEmpty
+                    ? ListView(
+                        physics: const AlwaysScrollableScrollPhysics(),
+                        padding: const EdgeInsets.symmetric(vertical: 60, horizontal: 20),
                         children: [
-                          Icon(Icons.receipt_long_rounded, size: 48, color: CashWiseColors.slate300),
-                          SizedBox(height: 8),
-                          Text('Belum ada transaksi', style: TextStyle(color: CashWiseColors.slate500, fontSize: 14)),
-                          SizedBox(height: 4),
-                          Text('Ketuk "Catat" untuk menambahkan', style: TextStyle(color: CashWiseColors.slate400, fontSize: 12)),
+                          Center(
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Container(
+                                  width: 56,
+                                  height: 56,
+                                  decoration: BoxDecoration(
+                                    color: Theme.of(context).brightness == Brightness.dark
+                                        ? CashWiseColors.darkSurfaceSubtle
+                                        : CashWiseColors.slate100,
+                                    borderRadius: BorderRadius.circular(16),
+                                  ),
+                                  child: const Icon(Icons.receipt_long_rounded, size: 28, color: CashWiseColors.slate400),
+                                ),
+                                const SizedBox(height: 14),
+                                const Text(
+                                  'Belum Ada Transaksi Tercatat',
+                                  style: TextStyle(fontWeight: FontWeight.w700, fontSize: 15),
+                                ),
+                                const SizedBox(height: 6),
+                                const Text(
+                                  'Tarik ke bawah untuk refresh atau ketuk "Catat" untuk mulai.',
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(color: CashWiseColors.slate500, fontSize: 12),
+                                ),
+                              ],
+                            ),
+                          ),
                         ],
+                      )
+                    : ListView.builder(
+                        physics: const AlwaysScrollableScrollPhysics(),
+                        padding: const EdgeInsets.symmetric(horizontal: 12),
+                        itemCount: filtered.length,
+                        itemBuilder: (_, i) => _txTile(filtered[i]),
                       ),
-                    )
-                  : ListView.builder(
-                      padding: const EdgeInsets.symmetric(horizontal: 12),
-                      itemCount: filtered.length,
-                      itemBuilder: (_, i) => _txTile(filtered[i]),
-                    ),
+          ),
         ),
       ],
     );
@@ -653,7 +697,10 @@ class _HomeScreenState extends State<HomeScreen> {
     final sel = _txTypeFilter == type;
     final activeColor = color ?? CashWiseColors.indigo600;
     return GestureDetector(
-      onTap: () => setState(() => _txTypeFilter = type),
+      onTap: () {
+        HapticFeedback.selectionClick();
+        setState(() => _txTypeFilter = type);
+      },
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
         decoration: BoxDecoration(
@@ -866,9 +913,15 @@ class _HomeScreenState extends State<HomeScreen> {
       return a.compareTo(b);
     });
 
-    return ListView(
-      padding: const EdgeInsets.all(12),
-      children: [
+    return RefreshIndicator(
+      onRefresh: () async {
+        await _reload();
+        HapticFeedback.lightImpact();
+      },
+      child: ListView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: const EdgeInsets.all(12),
+        children: [
         // Net worth card
         Card(
           child: Padding(
@@ -991,8 +1044,9 @@ class _HomeScreenState extends State<HomeScreen> {
           );
         }),
       ],
-    );
-  }
+    ),
+  );
+}
 
   IconData _groupIcon(String g) {
     switch (g) {
@@ -1530,9 +1584,15 @@ class _HomeScreenState extends State<HomeScreen> {
     final income = filtered.where((t) => t['type'] == 'INCOME').fold(0.0, (s, t) => s + ((t['amount'] as num).toDouble()));
     final expense = filtered.where((t) => t['type'] == 'EXPENSE').fold(0.0, (s, t) => s + ((t['amount'] as num).toDouble()));
 
-    return ListView(
-      padding: const EdgeInsets.all(12),
-      children: [
+    return RefreshIndicator(
+      onRefresh: () async {
+        await _reload();
+        HapticFeedback.lightImpact();
+      },
+      child: ListView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: const EdgeInsets.all(12),
+        children: [
         Row(
           children: List.generate(ranges.length, (i) {
             final sel = _statsRange == i;
@@ -1611,8 +1671,9 @@ class _HomeScreenState extends State<HomeScreen> {
         const SizedBox(height: 16),
         _buildStatsBreakdown(filtered),
       ],
-    );
-  }
+    ),
+  );
+}
 
   Widget _buildStatsBreakdown(List<Map<String, dynamic>> filtered) {
     final exp = <String, double>{};
@@ -1796,12 +1857,14 @@ class _HomeScreenState extends State<HomeScreen> {
                           } else {
                             await _txRepo.create(type: type, accountId: accountId, toAccountId: type == 'TRANSFER' ? toAccountId : null, categoryId: type != 'TRANSFER' ? categoryId : null, amount: amount, date: dateVal, note: noteCtl.text.trim().isEmpty ? null : noteCtl.text.trim());
                           }
+                          HapticFeedback.mediumImpact();
                           if (!ctx.mounted) return;
                           Navigator.pop(ctx);
                           await _reload();
                           if (!mounted) return;
                           ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(isEdit ? 'Transaksi diperbarui' : 'Transaksi tersimpan')));
                         } catch (e) {
+                          HapticFeedback.heavyImpact();
                           if (!mounted) return;
                           ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Gagal: $e')));
                         }
@@ -1875,12 +1938,14 @@ class _HomeScreenState extends State<HomeScreen> {
                             final type = group == 'Cash' ? 'CASH' : group == 'Investment' ? 'INVESTMENT' : 'BANK';
                             await _accRepo.create(name: nameCtl.text.trim(), type: type, group: group, balance: balance, description: descCtl.text.trim().isEmpty ? null : descCtl.text.trim());
                           }
+                          HapticFeedback.mediumImpact();
                           if (!ctx.mounted) return;
                           Navigator.pop(ctx);
                           await _reload();
                           if (!mounted) return;
                           ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(isEdit ? 'Akun diperbarui' : 'Akun ditambahkan')));
                         } catch (e) {
+                          HapticFeedback.heavyImpact();
                           if (!mounted) return;
                           ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Gagal: $e')));
                         }
@@ -2014,12 +2079,14 @@ class _HomeScreenState extends State<HomeScreen> {
                           } else {
                             await _catRepo.create(name: nameCtl.text.trim(), type: type, icon: icon, color: type == 'EXPENSE' ? '#F43F5E' : '#10B981');
                           }
+                          HapticFeedback.mediumImpact();
                           if (!ctx.mounted) return;
                           Navigator.pop(ctx);
                           await _reload();
                           if (!mounted) return;
                           ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(isEdit ? 'Kategori diperbarui' : 'Kategori ditambahkan')));
                         } catch (e) {
+                          HapticFeedback.heavyImpact();
                           if (!mounted) return;
                           ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Gagal: $e')));
                         }
